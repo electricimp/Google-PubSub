@@ -30,7 +30,11 @@
 #require "AWSLambda.agent.lib.nut:1.0.0"
 
 // GooglePubSub.PushSubscriber and GooglePubSub.Subscriptions demo.
-// Creates a push subscriptions related to im Agent URL and receives messages from it.
+// Creates a push subscription (related to imp Agent URL) to the specified topic
+// (topic name, subscription name and push subscription secret token are specified as 
+// constructor arguments), receives messages from it and prints messages data and 
+// attributes to the log.
+// Messages are acknowledged automatically by GooglePubSub.PushSubscriber library.
 class PushSubscriber {
     _topicName = null;
     _subscrName = null;

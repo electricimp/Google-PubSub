@@ -29,54 +29,53 @@
 #require "AWSRequestV4.class.nut:1.0.2"
 #require "AWSLambda.agent.lib.nut:1.0.0"
 
-// GooglePubSub.PullSubscriber and GooglePubSub.Subscriptions demo.
-// Creates a pull subscriptions if it does not exist and receives messages from it.
-class PullSubscriber {
+// GooglePubSub.Publisher and GooglePubSub.Topics demo.
+// Creates a topic if it does not exist (topic name is specified as constructor argument)
+// and periodically publishes messages to the topic.
+// Messages are published every 10 seconds, every message contains integer increasing data 
+// and measureTime attribute with data measurement time in seconds since the epoch format.
+class Publisher {
     _topicName = null;
-    _subscrName = null;
-    _subscrs = null;
-    _pullSubscriber = null;
+    _topics = null;
+    _publisher = null;
+    _counter = 0;
 
-    constructor(projectId, oAuthTokenProvider, topicName, subscrName) {
+    constructor(projectId, oAuthTokenProvider, topicName) {
         _topicName = topicName;
-        _subscrName = subscrName;
-        _subscrs = GooglePubSub.Subscriptions(projectId, oAuthTokenProvider);
-        _pullSubscriber = GooglePubSub.PullSubscriber(projectId, oAuthTokenProvider, subscrName);
+        _topics = GooglePubSub.Topics(projectId, oAuthTokenProvider);
+        _publisher = GooglePubSub.Publisher(projectId, oAuthTokenProvider, topicName);
     }
 
-    // Handler function to be executed when messages are received
-    function onMessagesReceived(error, messages) {
-        if (error) {
-            server.error("Pull messages request failed: " + error.details);
-        }
-        else {
-            server.log("Messages received:");
-            foreach (msg in messages) {
-                server.log(format("data: %s, attrs: %s, publishTime: %s",
-                    msg.data ? http.jsonencode(msg.data) : "null",
-                    msg.attributes ? http.jsonencode(msg.attributes) : "null",
-                    msg.publishTime));
-            }
-        }
+    // Returns a message to be published
+    function getData() {
+        _counter++;
+        return GooglePubSub.Message(_counter, { "measureTime" : time().tostring() });
     }
 
-    // Checks if the specified subscription exists and optionally creates it if not,
-    // then receives messages from it using repeated pending pull
-    function subscribe() {
-        local subscrOptions = {
-            "autoCreate" : true,
-            "subscrConfig" : GooglePubSub.SubscriptionConfig(_topicName)
-        };
-        _subscrs.obtain(_subscrName, subscrOptions, function (error, subscrConfig) {
+    // Periodically publishes messages to the specified topic
+    function publishData() {
+        _publisher.publish(getData(), function (error, messageIds) {
             if (error) {
-                server.error("Subscription obtain request failed: " + error.details);
+                server.error("Publish request failed: " + error.details);
             }
             else {
-                local pullOptions = {
-                    "repeat" : true,
-                    "autoAck" : true
-                };
-                _pullSubscriber.pendingPull(pullOptions, onMessagesReceived);
+                server.log("Data published successfully");
+            }
+        });
+        imp.wakeup(10.0, function () {
+            publishData();
+        }.bindenv(this));
+    }
+
+    // Checks if the specified topic exists and optionally creates it if not,
+    // then periodically publishes messages to the topic
+    function publish() {
+        _topics.obtain(_topicName, { "autoCreate" : true }, function (error) {
+            if (error) {
+                server.error("Topic obtain request failed: " + error.details);
+            }
+            else {
+                publishData();
             }
         }.bindenv(this));
     }
@@ -101,8 +100,7 @@ local oAuthTokenProvider = OAuth2.JWTProfile.Client(
     });
 
 const TOPIC_NAME = "test_topic";
-const SUBSCR_NAME = "test_pull_subscription";
 
 // Start Application
-pullSubscriber <- PullSubscriber(PROJECT_ID, oAuthTokenProvider, TOPIC_NAME, SUBSCR_NAME);
-pullSubscriber.subscribe();
+publisher <- Publisher(PROJECT_ID, oAuthTokenProvider, TOPIC_NAME);
+publisher.publish();
