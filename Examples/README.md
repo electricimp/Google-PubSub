@@ -47,7 +47,7 @@ This example receives Pub/Sub Messages from the *"test_pull_subscription"* Pub/S
 
 This example receives Pub/Sub Messages from the *"test_push_subscription"* Pub/Sub push subscription which belong to the specified (by *PROJECT_ID* configuration constant) Google Cloud Project and prints the messages content.
 
-Additional setup is required before running this application. See [Additional Setup For PushSubscriber Example](#additional-setup-for-pushSubscriber-example) section below.
+Additional setup is required before running this application. See [Additional Setup For PushSubscriber Example](#additional-setup-for-pushsubscriber-example) section below.
 
 - *"test_push_subscription"* subscription is created if it does not exist:
   - the subscription is related to *"test_topic"* topic,
