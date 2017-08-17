@@ -293,6 +293,8 @@ For message receiving the library provides two other components:
 
 - To receive messages from a push subscription, [GooglePubSub.PushSubscriber](#pullsubscriber-class) class may be used. But it works only for a subscription configured with a push endpoint which is based on URL of the IMP agent where the library is running. Auxiliary *GooglePubSub.Subscriptions.getImpAgentEndpoint()* method may be used to generate such an URL and, after that, the URL may be specified as a push endpoint.
 
+To create and use any push subscription, the push endpoint must be registered in Google Cloud Platform as described in "Registering endpoints" section of the [Google Cloud Pub/Sub Push Subscriber Guide](https://cloud.google.com/pubsub/docs/push).
+
 #### Examples
 
 ```squirrel
@@ -529,10 +531,10 @@ subscrs.iam().testPermissions(
     });
 ```
 
-## Samples
+## More Examples
 
-TBD
+Working examples are provided in [./Examples](./Examples) folder and described [here](./Examples/README.md).
 
 ## License
 
-The Predix library is licensed under the [MIT License](./LICENSE). - TBD
+The Predix library is licensed under the [MIT License](./LICENSE)
