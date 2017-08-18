@@ -19,6 +19,8 @@ The following information is printed out:
 - configuration of every subscription
 - IAM Policy of every subscription
 
+![ProjectInfo example](http://imgur.com/VDKgV7c.png)
+
 ### Publisher Example
 
 This example publishes Pub/Sub Messages to the *"test_topic"* Pub/Sub topic which belong to the specified (by *PROJECT_ID* configuration constant) Google Cloud Project.
@@ -28,6 +30,8 @@ This example publishes Pub/Sub Messages to the *"test_topic"* Pub/Sub topic whic
 - Every message contains:
   - message data - a "fake" data, integer, starts from 1 and increases by 1 with every message. Restarts from 1 when the example is restarted.
   - *"measureTime"* attribute - measurement time in seconds since the epoch format.
+
+![Publisher example](http://imgur.com/tggTPYg.png)
 
 ### PullSubscriber Example
 
@@ -42,6 +46,8 @@ This example receives Pub/Sub Messages from the *"test_pull_subscription"* Pub/S
   - value of the message data,
   - all custom attributes of the message,
   - the standard *"publishTime"* attribute.
+
+![PullSubscriber example](http://imgur.com/WDQ9lGQ.png)
 
 ### PushSubscriber Example
 
@@ -58,6 +64,8 @@ Additional setup is required before running this application. See [Additional Se
   - value of the message data,
   - all custom attributes of the message,
   - the standard *"publishTime"* attribute.
+
+![PushSubscriber example](http://imgur.com/HjXJrfz.png)
 
 ## Examples Setup
 
