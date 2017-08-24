@@ -22,12 +22,14 @@
 // ARISING FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR
 // OTHER DEALINGS IN THE SOFTWARE.
 
-#require "GooglePubSub.agent.lib.nut:1.0.0"
-// OAuth 2.0 library
-#require "OAuth2.agent.lib.nut:1.0.0"
-// AWS Lambda libraries - are used for RSA-SHA256 signature calculation
+// AWS Lambda libraries - are used for RSA-SHA256 signature calculation for OAuth2
 #require "AWSRequestV4.class.nut:1.0.2"
 #require "AWSLambda.agent.lib.nut:1.0.0"
+ 
+// OAuth 2.0 library required for GooglePubSub
+#require "OAuth2.agent.lib.nut:1.0.0"
+ 
+#require "GooglePubSub.agent.lib.nut:1.0.0"
 
 // GooglePubSub.PullSubscriber and GooglePubSub.Subscriptions demo.
 // Creates a pull subscription to the specified topic if it does not exist
@@ -38,12 +40,14 @@
 class PullSubscriber {
     _topicName = null;
     _subscrName = null;
+    _topics = null;
     _subscrs = null;
     _pullSubscriber = null;
 
     constructor(projectId, oAuthTokenProvider, topicName, subscrName) {
         _topicName = topicName;
         _subscrName = subscrName;
+        _topics = GooglePubSub.Topics(projectId, oAuthTokenProvider);
         _subscrs = GooglePubSub.Subscriptions(projectId, oAuthTokenProvider);
         _pullSubscriber = GooglePubSub.PullSubscriber(projectId, oAuthTokenProvider, subscrName);
     }
@@ -67,20 +71,27 @@ class PullSubscriber {
     // Checks if the specified subscription exists and optionally creates it if not,
     // then receives messages from it using repeated pending pull
     function subscribe() {
-        local subscrOptions = {
-            "autoCreate" : true,
-            "subscrConfig" : GooglePubSub.SubscriptionConfig(_topicName)
-        };
-        _subscrs.obtain(_subscrName, subscrOptions, function (error, subscrConfig) {
-            if (error) {
-                server.error("Subscription obtain request failed: " + error.details);
+        _topics.obtain(_topicName, null, function (error) {
+            if (error && error.type == PUB_SUB_ERROR.PUB_SUB_REQUEST_FAILED && error.httpStatus == 404) {
+                server.error(format("Topic %s doesn't exist. Please run Publisher example first to create the topic.", _topicName));
             }
             else {
-                local pullOptions = {
-                    "repeat" : true,
-                    "autoAck" : true
+                local subscrOptions = {
+                    "autoCreate" : true,
+                    "subscrConfig" : GooglePubSub.SubscriptionConfig(_topicName)
                 };
-                _pullSubscriber.pendingPull(pullOptions, onMessagesReceived);
+                _subscrs.obtain(_subscrName, subscrOptions, function (error, subscrConfig) {
+                    if (error) {
+                        server.error("Subscription obtain request failed: " + error.details);
+                    }
+                    else {
+                        local pullOptions = {
+                            "repeat" : true,
+                            "autoAck" : true
+                        };
+                        _pullSubscriber.pendingPull(pullOptions, onMessagesReceived);
+                    }
+                }.bindenv(this));
             }
         }.bindenv(this));
     }

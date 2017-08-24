@@ -22,12 +22,14 @@
 // ARISING FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR
 // OTHER DEALINGS IN THE SOFTWARE.
 
-#require "GooglePubSub.agent.lib.nut:1.0.0"
-// OAuth 2.0 library
-#require "OAuth2.agent.lib.nut:1.0.0"
-// AWS Lambda libraries - are used for RSA-SHA256 signature calculation
+// AWS Lambda libraries - are used for RSA-SHA256 signature calculation for OAuth2
 #require "AWSRequestV4.class.nut:1.0.2"
 #require "AWSLambda.agent.lib.nut:1.0.0"
+ 
+// OAuth 2.0 library required for GooglePubSub
+#require "OAuth2.agent.lib.nut:1.0.0"
+ 
+#require "GooglePubSub.agent.lib.nut:1.0.0"
 
 #require "PrettyPrinter.class.nut:1.0.1"
 

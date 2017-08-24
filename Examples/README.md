@@ -80,8 +80,11 @@ Enter "Project name" and click "Create".
 - Click "Select a project" link and choose your project.
 Copy ID of your project, the value will be used as **PROJECT_ID** configuration constant value.
 ![Project select](http://imgur.com/PR9U25p.png)
-- In the left side menu choose "Pub/Sub" and click "Enable API".
-![PubSub enable](http://imgur.com/81zNGg1.png)
+- In the left side menu choose "Pub/Sub".
+![PubSub menu](http://imgur.com/81zNGg1.png)
+- Click "Enable API".
+![PubSub enable](http://imgur.com/MS7MnZK.png)
+
 
 #### OAuth 2.0 JWT Profile configuration
 - Follow the instructions from [JWT Profile for OAuth 2.0](https://github.com/electricimp/OAuth-2.0/tree/master/examples#jwt-profile-for-oauth-20) to obtain all the required constants for OAuth 2.0 JWT Profile configuration - **GOOGLE_ISS, GOOGLE_SECRET_KEY, AWS_LAMBDA_REGION, AWS_ACCESS_KEY_ID, AWS_SECRET_ACCESS_KEY**.

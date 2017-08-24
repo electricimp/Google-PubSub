@@ -980,8 +980,8 @@ class GooglePubSub.IAM.Policy {
     }
     
     function _fromJson(jsonPolicy) {
-        version = GooglePubSub._utils._getTableValue(jsonPolicy, "version", null);
-        bindings = GooglePubSub._utils._getTableValue(jsonPolicy, "bindings", null);
+        version = GooglePubSub._utils._getTableValue(jsonPolicy, "version", 0);
+        bindings = GooglePubSub._utils._getTableValue(jsonPolicy, "bindings", []);
         etag = GooglePubSub._utils._getTableValue(jsonPolicy, "etag", null);
     }
 }
@@ -1031,7 +1031,7 @@ class GooglePubSub.Publisher {
     // Returns:                      Nothing
     function publish(message, callback = null) {
         local error = GooglePubSub._utils._validateNonEmptyArg(message, "message");
-        if (error){
+        if (error) {
             _invokePublishCallback(error, null, callback);
             return;
         }
@@ -1070,6 +1070,12 @@ class GooglePubSub.Publisher {
     }
 }
 
+enum _PUB_SUB_PULL_STATE {
+    STOPPED,
+    IN_PROGRESS,
+    STOPPING
+};
+
 // This class represents Pub/Sub Pull Subscriber.
 // It allows to receive messages from a Pull Subscription of Google Cloud Pub/Sub service
 // and acknowledge the received messages.
@@ -1086,7 +1092,7 @@ class GooglePubSub.PullSubscriber {
     _subscr = null;
 
     _periodicPullTimer = null;
-    _pullInProgress = null;
+    _pullState = null;
 
     // GooglePubSub.PullSubscriber constructor.
     //
@@ -1102,7 +1108,7 @@ class GooglePubSub.PullSubscriber {
         _oAuthTokenProvider = oAuthTokenProvider;
         _subscr = GooglePubSub._Resource(projectId, oAuthTokenProvider, _GOOGLE_PUB_SUB_SUBSCRIPTIONS_TYPE);
         _subscr.setName(subscrName);
-        _pullInProgress = false;
+        _pullState = _PUB_SUB_PULL_STATE.STOPPED;
     }
 
     // One shot pulling.
@@ -1136,7 +1142,7 @@ class GooglePubSub.PullSubscriber {
     //
     // Returns:                      Nothing
     function pull(options = null, callback = null) {
-        if (_checkPullInProgress(callback)) {
+        if (_checkPullState(callback)) {
             _pull(options, true, true, callback);
         }
     }
@@ -1181,18 +1187,18 @@ class GooglePubSub.PullSubscriber {
     // Returns:                      Nothing
     function periodicPull(period, options = null, callback = null) {
         local error = GooglePubSub._utils._validatePositiveArg(period, "period", null);
-        if (error){
+        if (error) {
             _invokePullCallback(error, null, false, callback);
             return;
         }
-        if (_checkPullInProgress(callback)) {
-            _pullInProgress = true;
+        if (_checkPullState(callback)) {
+            _pullState = _PUB_SUB_PULL_STATE.IN_PROGRESS;
             _periodicPull(period, options, callback);
         }
     }
 
     // Pending (waiting) pulling.
-    // Waits for new messages and calls a callback when new messages are appeared.
+    // Waits for new messages and calls a callback when new messages appear.
     // The new messages are returned in the callback (not more than maxMessages).
     // The messages are automatically acknowledged if autoAck option is set to true.
     // The callback is called only when new messages are available (or in case of an error).
@@ -1226,8 +1232,8 @@ class GooglePubSub.PullSubscriber {
     //
     // Returns:                      Nothing
     function pendingPull(options = null, callback = null) {
-        if (_checkPullInProgress(callback)) {
-            _pullInProgress = true;
+        if (_checkPullState(callback)) {
+            _pullState = _PUB_SUB_PULL_STATE.IN_PROGRESS;
             _pull(options, false, false, callback);
         }
     }
@@ -1238,13 +1244,16 @@ class GooglePubSub.PullSubscriber {
     //
     // Returns:                      Nothing
     function stopPull() {
-        if (_pullInProgress) {
+        if (_pullState == _PUB_SUB_PULL_STATE.IN_PROGRESS) {
+            _pullState = _PUB_SUB_PULL_STATE.STOPPING;
             if (_periodicPullTimer) {
                 imp.cancelwakeup(_periodicPullTimer);
                 _periodicPullTimer = null;
+                _pullState = _PUB_SUB_PULL_STATE.STOPPED;
             }
-            _subscr.stopPullRequest();
-            _pullInProgress = false;
+            if (_subscr.stopPullRequest()) {
+                _pullState = _PUB_SUB_PULL_STATE.STOPPED;
+            }
         }
     }
 
@@ -1270,7 +1279,7 @@ class GooglePubSub.PullSubscriber {
     // Returns:                      Nothing
     function ack(message, callback = null) {
         local error = GooglePubSub._utils._validateNonEmptyArg(message, "message");
-        if (error){
+        if (error) {
             GooglePubSub._utils._invokeDefaultCallback(error, callback);
             return;
         }
@@ -1307,7 +1316,7 @@ class GooglePubSub.PullSubscriber {
     function modifyAckDeadline(message, ackDeadlineSeconds, callback = null) {
         local error = GooglePubSub._utils._validateNonEmptyArg(message, "message") ||
             GooglePubSub._utils._validatePositiveArg(ackDeadlineSeconds, "ackDeadlineSeconds");
-        if (error){
+        if (error) {
             GooglePubSub._utils._invokeDefaultCallback(error, callback);
             return;
         }
@@ -1322,8 +1331,8 @@ class GooglePubSub.PullSubscriber {
 
     // -------------------- PRIVATE METHODS -------------------- //
 
-    function _checkPullInProgress(callback) {
-        if (_pullInProgress) {
+    function _checkPullState(callback) {
+        if (_pullState != _PUB_SUB_PULL_STATE.STOPPED) {
             _invokePullCallback(
                 GooglePubSub.Error(PUB_SUB_ERROR.LIBRARY_ERROR, GOOGLE_PUB_SUB_PULL_IN_PROGRESS),
                 null, false, callback);
@@ -1339,10 +1348,21 @@ class GooglePubSub.PullSubscriber {
         _pull(options, true, false, callback);
     }
 
+    function _isStopPull() {
+        if (_pullState == _PUB_SUB_PULL_STATE.STOPPING) {
+            _pullState = _PUB_SUB_PULL_STATE.STOPPED;
+            return true;
+        }
+        return false;
+    }
+
     function _pull(options, returnImmediately, returnEmptyMsgs, callback = null) {
+        if (_isStopPull()) {
+            return;
+        }
         local maxMessages = GooglePubSub._utils._getTableValue(options, "maxMessages", _GOOGLE_PUB_SUB_PULL_MAX_MESSAGES_DEFAULT);
         local error = GooglePubSub._utils._validatePositiveArg(maxMessages, "maxMessages");
-        if (error){
+        if (error) {
             _invokePullCallback(error, null, returnEmptyMsgs, callback);
             return;
         }
@@ -1352,6 +1372,9 @@ class GooglePubSub.PullSubscriber {
             "maxMessages" : maxMessages
         };
         _subscr.request("POST", ":pull", body, function (error, httpResponse) {
+            if (_isStopPull()) {
+                return;
+            }
             local messages = null;
             if (!error) {
                 messages = GooglePubSub._utils._getTableValue(httpResponse, "receivedMessages", []).map(function (value) {
@@ -1378,7 +1401,7 @@ class GooglePubSub.PullSubscriber {
                     }.bindenv(this));
                 }
                 else {
-                    _pullInProgress = false;
+                    _pullState = _PUB_SUB_PULL_STATE.STOPPED;
                 }
             }
         }.bindenv(this), true);
@@ -1623,14 +1646,9 @@ class GooglePubSub._Resource {
     }
 
     function setName(name) {
-        if (GooglePubSub._utils._isEmpty(name)) {
-            _resourceName = null;
-            _resourceUrl = null;
-        }
-        else {
-            _resourceName = format("%s/%s/%s", _projectName, _resourceType, name);
-            _resourceUrl = format("%s/%s", _GOOGLE_PUB_SUB_BASE_URL, _resourceName);
-        }
+        _setResourceName(GooglePubSub._utils._isEmpty(name) ? 
+            null :
+            format("%s/%s/%s", _projectName, _resourceType, name));
     }
 
     function getResourceName() {
@@ -1655,10 +1673,12 @@ class GooglePubSub._Resource {
 
     function obtain(options, createBody, callback) {
         local autoCreate = GooglePubSub._utils._getTableValue(options, "autoCreate", false);
+        local resourceName = _resourceName;
         get(function (error, httpResponse) {
                 if (autoCreate && 
                     error && error.type == PUB_SUB_ERROR.PUB_SUB_REQUEST_FAILED &&
                     error.httpStatus == 404) {
+                    _setResourceName(resourceName);
                     create(createBody, callback);
                 }
                 else {
@@ -1698,13 +1718,26 @@ class GooglePubSub._Resource {
     }
 
     function request(method, urlSuffix, body, callback, isPull = false) {
-        _processRequest(method, _resourceUrl ? format("%s%s", _resourceUrl, urlSuffix) : null, body, callback);
+        _processRequest(method, _resourceUrl ? format("%s%s", _resourceUrl, urlSuffix) : null, body, callback, true, isPull);
     }
 
     function stopPullRequest() {
         if (_currPullRequest) {
             _currPullRequest.cancel();
             _currPullRequest = null;
+            return true;
+        }
+        return false;
+    }
+
+    function _setResourceName(resourceName) {
+        if (GooglePubSub._utils._isEmpty(resourceName)) {
+            _resourceName = null;
+            _resourceUrl = null;
+        }
+        else {
+            _resourceName = resourceName;
+            _resourceUrl = format("%s/%s", _GOOGLE_PUB_SUB_BASE_URL, _resourceName);
         }
     }
 
@@ -1723,7 +1756,7 @@ class GooglePubSub._Resource {
             GooglePubSub._utils._getTableValue(options, "pageSize", _GOOGLE_PUB_SUB_LIST_PAGE_SIZE_DEFAULT) :
             _GOOGLE_PUB_SUB_LIST_PAGE_SIZE_DEFAULT;
         local error = GooglePubSub._utils._validatePositiveArg(pageSize, "pageSize");
-        if (error){
+        if (error) {
             _invokeListCallback(error, null, null, options, callback);
             return;
         }
