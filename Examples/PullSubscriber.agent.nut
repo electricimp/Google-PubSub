@@ -73,7 +73,7 @@ class PullSubscriber {
     function subscribe() {
         _topics.obtain(_topicName, null, function (error) {
             if (error && error.type == PUB_SUB_ERROR.PUB_SUB_REQUEST_FAILED && error.httpStatus == 404) {
-                server.error(format("Topic %s doesn't exist. Please run Publisher example first to create the topic.", _topicName));
+                server.error(format("Topic %s doesn't exist. Impossible to create a subscription.", _topicName));
             }
             else {
                 local subscrOptions = {
