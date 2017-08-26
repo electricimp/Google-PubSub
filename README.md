@@ -29,6 +29,8 @@ To manage Pub/Sub resources associated with different Projects, you may use diff
 
 For more information see [Google Cloud Project description](https://cloud.google.com/resource-manager/docs/cloud-platform-resource-hierarchy#projects) and [Creating and Managing Projects](https://cloud.google.com/resource-manager/docs/creating-managing-projects)
 
+An example of how to create and configure a Google Cloud project see [here](./Examples/README.md#google-cloud-account-configuration).
+
 ## Library Usage
 
 The library API is described in details in the source file, [here](./GooglePubSub.agent.lib.nut).
