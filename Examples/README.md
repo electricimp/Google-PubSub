@@ -6,7 +6,19 @@ This readme describes example applications provided with [GooglePubSub library](
 
 Before running an example application you need to set the configuration constants in the application (IMP agent) source code. See [Examples Setup](#examples-setup) section below.
 
-The four example applications are provided.
+The following example applications are provided:
+- *ProjectInfo*
+- *Publisher*
+- *PullSubscriber*
+- *PushSubscriber*
+
+To see the messages comming you need to run *PullSubscriber* and/or *PushSubscriber* examples in parallel with *Publisher* example.
+The recommended order of the examples running:
+- run *Publisher* example on the agent of your first IMP device
+- run *PullSubscriber* example on the agent of your second IMP device
+- run *PushSubscriber* example on the agent of your third IMP device
+
+*ProjectInfo* example may be ran many times at any moment. But note, it displays nothing if no topics/subscriptions have been created in your project (e.g. by running other provided examples). 
 
 ### ProjectInfo Example
 
