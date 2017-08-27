@@ -121,6 +121,7 @@ http.onrequest(function (request, response) {
 });
 ```
 ![Imp verification code](http://imgur.com/HzSt05P.png)
+Note, this verification is needed only once per one IMP Agent. Make sure the above code is not included in your application source code (e.g. in PushSubscriber example), otherwise message receiving will not work.
 - In Google Search Console click to the link "Confirm successful upload by visiting ... in your browser" and then click "Verify".
 ![Search console steps](http://imgur.com/l8z6WvP.png)
 You should receive success message like "Congratulations, you have successfully verified your ownership of ..."
