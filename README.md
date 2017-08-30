@@ -61,23 +61,7 @@ To instantiate any [main component](#main-components) of this library you need t
 
 Information about Google Cloud Pub/Sub service authentication see [here](https://cloud.google.com/docs/authentication).
 
-The library requires an external provider of access tokens to access Google Cloud services. The provider must contain an *acquireAccessToken()* method that takes one required parameter, a handler that is called when an access token is acquired or an error occurs. The handler takes two required parameters: *token*, a string representation of access token, and *error*, a string with error details or null if no error occurred. 
-
-The Access Token Provider may be an application containing the following function:
-
-```squirrel
-function tokenReadyCallback(token, error) {
-    if (error) {
-        server.error(error);
-    } else {
-        server.log("The access token has the value: " + token);
-    }
-}
-
-acquireAccessToken(tokenReadyCallback);
-```
-
-Or any external library, e.g. [OAuth2.JWTProfile.Client OAuth2 library](https://github.com/electricimp/OAuth-2.0), which already contains the *acquireAccessToken()* method.
+The library requires an external provider of access tokens to access Google Cloud services. The provider must contain an *acquireAccessToken()* method that takes one required parameter, a handler that is called when an access token is acquired or an error occurs. The handler takes two required parameters: *token*, a string representation of access token, and *error*, a string with error details or null if no error occurred. You can either write an application or use an external library, e.g. [OAuth2.JWTProfile.Client OAuth2 library](https://github.com/electricimp/OAuth-2.0), which contains the *acquireAccessToken()* method.
 
 ##### Example: OAuth2 JWTProfile Access Token Provider
 
