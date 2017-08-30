@@ -117,18 +117,6 @@
 // (e.g. a response is received), successfully or not.
 // Details of every callback are described in the corresponding methods.
 
-class GooglePubSub {
-    static VERSION = "1.0.0";
-
-    // Enables/disables the library debug output (including errors logging).
-    // Disabled by default.
-    //
-    // Parameters:
-    //     value : boolean           true to enable, false to disable
-    function setDebug(value) {
-    }
-}
-
 // GooglePubSub library operation error types
 enum PUB_SUB_ERROR {
     // the library detects an error, e.g. the library is wrongly initialized or 
@@ -142,6 +130,114 @@ enum PUB_SUB_ERROR {
     // the error.details and error.httpResponse properties
     PUB_SUB_UNEXPECTED_RESPONSE
 };
+
+// Error details produced by the library
+const GOOGLE_PUB_SUB_TOKEN_ACQUISITION_ERROR = "Access token acquisition error";
+const GOOGLE_PUB_SUB_REQUEST_FAILED = "Google Pub/Sub request failed with status code";
+const GOOGLE_PUB_SUB_NON_EMPTY_ARG = "Non empty argument required";
+const GOOGLE_PUB_SUB_POSITIVE_ARG = "Positive argument required";
+const GOOGLE_PUB_SUB_WRONG_ARG_TYPE = "Invalid type of argument, required";
+const GOOGLE_PUB_SUB_PULL_IN_PROGRESS = "Different pull is active";
+const GOOGLE_PUB_SUB_PUSH_SUBSCR_REQUIRED = "Push subscription required";
+const GOOGLE_PUB_SUB_INTERNAL_PUSH_REQUIRED = "Push endpoint based on imp Agent URL required";
+const GOOGLE_PUB_SUB_OPTION_REQUIRED = "option must be specified";
+const GOOGLE_PUB_SUB_INVALID_FORMAT = "Invalid format of";
+
+class GooglePubSub {
+    static VERSION = "1.0.0";
+
+    // Enables/disables the library debug output (including errors logging).
+    // Disabled by default.
+    //
+    // Parameters:
+    //     value : boolean           true to enable, false to disable
+    function setDebug(value) {
+        _utils._debug = value;
+    }
+
+    // Internal utility methods used by different parts of the library
+    static _utils = {
+        _debug = false,
+
+        // Logs an error occurred during the library methods execution
+        function _logError(errMessage) {
+            if (_debug) {
+                server.error("[GooglePubSub] " + errMessage);
+            }
+        }
+
+        // Logs an debug messages occurred during the library methods execution
+        function _logDebug(message) {
+            if (_debug) {
+                server.log("[GooglePubSub] " + message);
+            }
+        }
+
+        // Converts a value to an array
+        function _arrify(value) {
+            if (typeof value == "array") {
+                return value;
+            }
+            else if (value == null) {
+                return [];
+            }
+            else {
+                return array(1, value);
+            }
+        }
+
+        // Returns value of specified table key, if exists or defaultValue
+        function _getTableValue(table, key, defaultValue) {
+            return (table && key in table) ? table[key] : defaultValue;
+        }
+
+        // Checks if value is empty (null, empty string, empty table or empty array)
+        function _isEmpty(value) {
+            if (value == null || typeof value == "string" && value.len() == 0 ||
+                typeof value == "table" && value.len() == 0 ||
+                typeof value == "array" && value.len() == 0) {
+                return true;
+            }
+            return false;
+        }
+
+        // Validates the argument is not empty. Returns PUB_SUB_ERROR.LIBRARY_ERROR if the check failed.
+        function _validateNonEmptyArg(param, paramName, logError = true) {
+            if (_isEmpty(param)) {
+                return GooglePubSub.Error(
+                    PUB_SUB_ERROR.LIBRARY_ERROR,
+                    format("%s: %s", GOOGLE_PUB_SUB_NON_EMPTY_ARG, paramName),
+                    null, null, logError);
+            }
+            return null;
+        }
+
+        // Validates the argument is positive and belongs to the specified type.
+        // Returns PUB_SUB_ERROR.LIBRARY_ERROR if the check failed.
+        function _validatePositiveArg(param, paramName, type = "integer") {
+            if (type && typeof param != type) {
+                return GooglePubSub.Error(
+                    PUB_SUB_ERROR.LIBRARY_ERROR,
+                    format("%s %s: %s", GOOGLE_PUB_SUB_WRONG_ARG_TYPE, type, paramName));
+            }
+            if (param <= 0) {
+                return GooglePubSub.Error(
+                    PUB_SUB_ERROR.LIBRARY_ERROR,
+                    format("%s: %s", GOOGLE_PUB_SUB_POSITIVE_ARG, paramName));
+            }
+            return null;
+        }
+
+        // Invokes default callback with single error parameter.
+        function _invokeDefaultCallback(error, callback) {
+            if (callback) {
+                imp.wakeup(0, function () {
+                    callback(error);
+                });
+            }
+        }
+    };
+}
 
 // Auxiliary class, represents error returned by the library.
 class GooglePubSub.Error {
@@ -158,12 +254,35 @@ class GooglePubSub.Error {
     // Response body of failed request (table),
     // null if type is PUB_SUB_ERROR.LIBRARY_ERROR
     httpResponse = null;
+
+    constructor(type, details, httpResponse = null, httpStatus = null, logError = true) {
+        this.type = type;
+        this.details = details;
+        this.httpStatus = httpStatus;
+        this.httpResponse = httpResponse;
+        if (logError) {
+            GooglePubSub._utils._logError(details);
+        }
+    }
 }
+
+// Internal GooglePubSub library constants
+const _GOOGLE_PUB_SUB_BASE_URL = "https://pubsub.googleapis.com/v1";
+const _GOOGLE_PUB_SUB_TOPICS_TYPE = "topics";
+const _GOOGLE_PUB_SUB_SUBSCRIPTIONS_TYPE = "subscriptions";
+const _GOOGLE_PUB_SUB_LIST_PAGE_SIZE_DEFAULT = 20;
+const _GOOGLE_PUB_SUB_PULL_MAX_MESSAGES_DEFAULT = 20;
+const _GOOGLE_PUB_SUB_ACK_DEADLINE_SECONDS_DEFAULT = 10;
 
 // This class provides access to Pub/Sub Topics manipulation methods.
 // It can be used to check existence, create, delete topics of the specified Project
 // and obtain a list of the topics registered to the Project.
 class GooglePubSub.Topics {
+    _projectId = null;
+    _oAuthTokenProvider = null;
+    _topic = null;
+    _iam = null;
+
     // GooglePubSub.Topics constructor.
     //
     // Parameters:
@@ -173,6 +292,10 @@ class GooglePubSub.Topics {
     //                                         
     // Returns:                      GooglePubSub.Topics instance created
     constructor(projectId, oAuthTokenProvider) {
+        _projectId = projectId;
+        _oAuthTokenProvider = oAuthTokenProvider;
+        _topic = GooglePubSub._Resource(projectId, oAuthTokenProvider, _GOOGLE_PUB_SUB_TOPICS_TYPE);
+        _iam = GooglePubSub.IAM(_topic);
     }
 
     // Checks if the specified topic exists and optionally creates it if not.
@@ -196,6 +319,13 @@ class GooglePubSub.Topics {
     //
     // Returns:                      Nothing
     function obtain(topicName, options = null, callback = null) {
+        _topic.setName(topicName);
+        _topic.obtain(
+            options,
+            null,
+            function (error, httpResponse) {
+                GooglePubSub._utils._invokeDefaultCallback(error, callback);
+            }.bindenv(this));
     }
 
     // Deletes the specified topic, if it exists.
@@ -216,6 +346,10 @@ class GooglePubSub.Topics {
     //
     // Returns:                      Nothing
     function remove(topicName, callback = null) {
+        _topic.setName(topicName);
+        _topic.remove(function (error, httpResponse) {
+            GooglePubSub._utils._invokeDefaultCallback(error, callback);
+        }.bindenv(this));
     }
 
     // Gets a list of the topics (names of all topics) registered to the project.
@@ -258,6 +392,7 @@ class GooglePubSub.Topics {
     //
     // Returns:                      Nothing
     function list(options = null, callback = null) {
+        _topic.list(options, callback);
     }
 
     // Provides Identity and Access Management (IAM) functionality for topics.
@@ -266,6 +401,7 @@ class GooglePubSub.Topics {
     // Returns:                      An instance of IAM class that can be used for execution of 
     //                               IAM methods for a specific topic.
     function iam() {
+        return _iam;
     }
 }
 
@@ -292,6 +428,11 @@ class GooglePubSub.Topics {
 // In this case GooglePubSub.PushSubscriber class can be utilized to receive messages from the push subscription. 
 //
 class GooglePubSub.Subscriptions {
+    _projectId = null;
+    _oAuthTokenProvider = null;
+    _subscr = null;
+    _iam = null;
+
     // GooglePubSub.Subscriptions constructor.
     //
     // Parameters:
@@ -301,6 +442,10 @@ class GooglePubSub.Subscriptions {
     //                                         
     // Returns:                      GooglePubSub.Subscriptions instance created
     constructor(projectId, oAuthTokenProvider) {
+        _projectId = projectId;
+        _oAuthTokenProvider = oAuthTokenProvider;
+        _subscr = GooglePubSub._Resource(projectId, oAuthTokenProvider, _GOOGLE_PUB_SUB_SUBSCRIPTIONS_TYPE);
+        _iam = GooglePubSub.IAM(_subscr);
     }
 
     // Obtains (get or create) the specified subscription.
@@ -332,6 +477,33 @@ class GooglePubSub.Subscriptions {
     //
     // Returns:                      Nothing
     function obtain(subscrName, options = null, callback = null) {
+        local autoCreate = GooglePubSub._utils._getTableValue(options, "autoCreate", false); 
+        local subscrConfig = GooglePubSub._utils._getTableValue(options, "subscrConfig", null);
+        if (autoCreate && !subscrConfig) {
+            _invokeObtainCallback(
+                GooglePubSub.Error(PUB_SUB_ERROR.LIBRARY_ERROR, format("%s %s", "subscrConfig", GOOGLE_PUB_SUB_OPTION_REQUIRED)),
+                null, callback);
+            return;
+        }
+        if (subscrConfig) {
+            local configError = subscrConfig._getError();
+            if (configError) {
+                _invokeObtainCallback(configError, null, callback);
+                return;
+            }
+        }
+        _subscr.setName(subscrName);
+        _subscr.obtain(
+            options,
+            subscrConfig ? subscrConfig._toJson(_projectId) : null,
+            function (error, httpResponse) {
+                local subscrCfg = null;
+                if (!error) {
+                    subscrCfg = GooglePubSub.SubscriptionConfig(null);
+                    subscrCfg._fromJson(httpResponse, _projectId);
+                }
+                _invokeObtainCallback(error, subscrCfg, callback);
+            }.bindenv(this));
     }
 
     // Modifies push delivery endpoint configuration for the specified subscription.
@@ -355,6 +527,21 @@ class GooglePubSub.Subscriptions {
     //
     // Returns:                      Nothing
     function modifyPushConfig(subscrName, pushConfig, callback = null) {
+        _subscr.setName(subscrName);
+        if (pushConfig) {
+            local configError = pushConfig._getError();
+            if (configError) {
+                GooglePubSub._utils._invokeDefaultCallback(configError, callback);
+                return;
+            }
+        }
+        _subscr.request(
+            "POST",
+            ":modifyPushConfig",
+            pushConfig ? { "pushConfig" : pushConfig._toJson() } : {},
+            function (error, httpResponse) {
+                GooglePubSub._utils._invokeDefaultCallback(error, callback);
+            }.bindenv(this));
     }
 
     // Deletes the specified subscription, if it exists.
@@ -376,6 +563,10 @@ class GooglePubSub.Subscriptions {
     //
     // Returns:                      Nothing
     function remove(subscrName, callback = null) {
+        _subscr.setName(subscrName);
+        _subscr.remove(function (error, httpResponse) {
+            GooglePubSub._utils._invokeDefaultCallback(error, callback);
+        }.bindenv(this));
     }
 
     // Gets a list of the subscriptions (names of all subscriptions) registered to the project
@@ -420,6 +611,15 @@ class GooglePubSub.Subscriptions {
     //
     // Returns:                      Nothing
     function list(options = null, callback = null) {
+        local topicName = GooglePubSub._utils._getTableValue(options, "topicName", null);
+        if (topicName) {
+            local topic = GooglePubSub._Resource(_projectId, _oAuthTokenProvider, _GOOGLE_PUB_SUB_TOPICS_TYPE);
+            topic.setName(topicName);
+            _subscr._list(topic.getResourceUrl(), options, true, callback);
+        }
+        else {
+            _subscr.list(options, callback);
+        }
     }
 
     // Provides Identity and Access Management (IAM) functionality for subscriptions.
@@ -428,6 +628,7 @@ class GooglePubSub.Subscriptions {
     // Returns:                      An instance of IAM class that can be used for execution of 
     //                               IAM methods for a specific subscription.
     function iam() {
+        return _iam;
     }
 
     // Auxiliary method to compose a endpoint URL based on imp Agent URL.
@@ -449,6 +650,27 @@ class GooglePubSub.Subscriptions {
     //
     // Returns:                      URL based on imp Agent URL
     function getImpAgentEndpoint(relativePath = null, secretToken = null) {
+        local endpoint = http.agenturl();
+        if (relativePath) {
+            endpoint = format("%s/%s", endpoint, relativePath);
+        }
+        if (endpoint.slice(endpoint.len() - 1) != "/") {
+            endpoint = endpoint + "/";
+        }
+        if (secretToken) {
+            endpoint = format("%s?token=%s", endpoint, secretToken);
+        }
+        return endpoint;
+    }
+
+    // -------------------- PRIVATE METHODS -------------------- //
+
+    function _invokeObtainCallback(error, subscrConfig, callback) {
+        if (callback) {
+            imp.wakeup(0, function () {
+                callback(error, subscrConfig);
+            });
+        }
     }
 }
 
@@ -478,7 +700,49 @@ class GooglePubSub.SubscriptionConfig {
     //         (optional)
     //
     // Returns:                         GooglePubSub.SubscriptionConfig instance created.
-    constructor(topicName, ackDeadlineSeconds = 10, pushConfig = null) {
+    constructor(topicName, ackDeadlineSeconds = _GOOGLE_PUB_SUB_ACK_DEADLINE_SECONDS_DEFAULT, pushConfig = null) {
+        this.topicName = topicName;
+        this.ackDeadlineSeconds = ackDeadlineSeconds;
+        this.pushConfig = pushConfig;
+    }
+
+    // -------------------- PRIVATE METHODS -------------------- //
+
+    function _toJson(projectId) {
+        local topic = GooglePubSub._Resource(projectId, null, _GOOGLE_PUB_SUB_TOPICS_TYPE);
+        topic.setName(topicName);
+        local result = {
+            "topic" : topic.getResourceName(),
+            "ackDeadlineSeconds" : ackDeadlineSeconds
+        };
+        if (pushConfig) {
+            result["pushConfig"] <- pushConfig._toJson();
+        }
+        return result;
+    }
+
+    function _fromJson(jsonSubscrConfig, projectId) {
+        topicName = null;
+        ackDeadlineSeconds = null;
+        pushConfig = null;
+        local topic = GooglePubSub._utils._getTableValue(jsonSubscrConfig, "topic", null);
+        if (topic) {
+            topicName = GooglePubSub._Resource(projectId, null, _GOOGLE_PUB_SUB_TOPICS_TYPE).getName(topic);
+        }
+        ackDeadlineSeconds = GooglePubSub._utils._getTableValue(
+            jsonSubscrConfig, "ackDeadlineSeconds", _GOOGLE_PUB_SUB_ACK_DEADLINE_SECONDS_DEFAULT);
+            
+        local pushCfg = GooglePubSub._utils._getTableValue(jsonSubscrConfig, "pushConfig", null);
+        if (!GooglePubSub._utils._isEmpty(pushCfg)) {
+            pushConfig = GooglePubSub.PushConfig(null);
+            pushConfig._fromJson(pushCfg);
+        }
+    }
+
+    function _getError() {
+        return GooglePubSub._utils._validateNonEmptyArg(topicName, "topicName") ||
+            GooglePubSub._utils._validatePositiveArg(ackDeadlineSeconds, "ackDeadlineSeconds") ||
+            (pushConfig ? pushConfig._getError() : null);
     }
 }
 
@@ -501,6 +765,29 @@ class GooglePubSub.PushConfig {
     //                                         
     // Returns:                      GooglePubSub.PushConfig instance created.
     constructor(pushEndpoint, attributes = null) {
+        this.pushEndpoint = pushEndpoint;
+        this.attributes = attributes;
+    }
+
+    // -------------------- PRIVATE METHODS -------------------- //
+
+    function _toJson() {
+        local result = {
+            "pushEndpoint" : pushEndpoint
+        };
+        if (attributes) {
+            result["attributes"] <- attributes;
+        }
+        return result;
+    }
+
+    function _fromJson(jsonPushConfig) {
+        pushEndpoint = GooglePubSub._utils._getTableValue(jsonPushConfig, "pushEndpoint", null);
+        attributes = GooglePubSub._utils._getTableValue(jsonPushConfig, "attributes", null);
+    }
+
+    function _getError() {
+        return GooglePubSub._utils._validateNonEmptyArg(pushEndpoint, "pushEndpoint");
     }
 }
 
@@ -523,6 +810,12 @@ class GooglePubSub.PushConfig {
 // Management Documentation: https://cloud.google.com/iam/docs/overview
 //
 class GooglePubSub.IAM {
+    _resource = null;
+
+    constructor(resource) {
+        _resource = resource;
+    }
+
     // Gets the access control policy for a resource.
     // Returns an empty policy if the resource exists and does not have a policy set.
     //
@@ -538,8 +831,12 @@ class GooglePubSub.IAM {
     //
     // Returns:                      Nothing
     function getPolicy(resourceName, callback = null) {
+        _resource.setName(resourceName);
+        _resource.getIamPolicy(function (error, httpResponse) {
+            _invokePolicyCallback(error, httpResponse, callback);
+        }.bindenv(this));
     }
-  
+
     // Sets the access control policy on the specified resource. Replaces any existing policy.
     //
     // Parameters:
@@ -556,6 +853,15 @@ class GooglePubSub.IAM {
     //
     // Returns:                      Nothing
     function setPolicy(resourceName, policy, callback = null) {
+        local policyError = GooglePubSub._utils._validateNonEmptyArg(policy, "policy");
+        if (policyError) {
+            _invokePolicyCallback(policyError, null, callback);
+            return;
+        }
+        _resource.setName(resourceName);
+        _resource.setIamPolicy(policy, function (error, httpResponse) {
+            _invokePolicyCallback(error, httpResponse, callback);
+        }.bindenv(this));
     }
 
     // Tests a set of permissions for a resource.
@@ -581,6 +887,40 @@ class GooglePubSub.IAM {
     //
     // Returns:                      Nothing
     function testPermissions(resourceName, permissions, callback = null) {
+        local error = GooglePubSub._utils._validateNonEmptyArg(permissions, "permissions");
+        if (error) {
+            imp.wakeup(0, function () {
+                callback(error, null);
+            });
+            return;
+        }
+        _resource.setName(resourceName);
+        _resource.testIamPermissions(permissions, function (error, httpResponse) {
+            if (callback) {
+                local permissions = null;
+                if (!error) {
+                    permissions = GooglePubSub._utils._getTableValue(httpResponse, "permissions", []);
+                }
+                imp.wakeup(0, function () {
+                    callback(error, permissions);
+                });
+            }
+        }.bindenv(this));
+    }
+
+    // -------------------- PRIVATE METHODS -------------------- //
+
+    function _invokePolicyCallback(error, httpResponse, callback) {
+        if (callback) {
+            local policy = null;
+            if (!error) {
+                policy = GooglePubSub.IAM.Policy(null);
+                policy._fromJson(httpResponse);
+            }
+            imp.wakeup(0, function () {
+                callback(error, policy);
+            });
+        }
     }
 }
 
@@ -618,12 +958,41 @@ class GooglePubSub.IAM.Policy {
     //         (optional)            For more information see https://cloud.google.com/pubsub/docs/reference/rest/v1/Policy
     // Returns:                      GooglePubSub.IAM.Policy instance created.
     constructor(version = 0, bindings = null, etag = null) {
+        this.version = version;
+        this.bindings = bindings;
+        this.etag = etag;
+    }
+
+    // -------------------- PRIVATE METHODS -------------------- //
+
+    function _toJson() {
+        local result = {};
+        if (version) {
+            result["version"] <- version;
+        }
+        if (bindings) {
+            result["bindings"] <- bindings;
+        }
+        if (etag) {
+            result["etag"] <- etag;
+        }
+        return result;
+    }
+    
+    function _fromJson(jsonPolicy) {
+        version = GooglePubSub._utils._getTableValue(jsonPolicy, "version", 0);
+        bindings = GooglePubSub._utils._getTableValue(jsonPolicy, "bindings", []);
+        etag = GooglePubSub._utils._getTableValue(jsonPolicy, "etag", null);
     }
 }
 
 // This class represents Pub/Sub Publisher.
 // It allows to publish messages to a specific topic of Google Cloud Pub/Sub service.
 class GooglePubSub.Publisher {
+    _projectId = null;
+    _oAuthTokenProvider = null;
+    _topic = null;
+
     // GooglePubSub.Publisher constructor.
     //
     // Parameters:
@@ -634,6 +1003,10 @@ class GooglePubSub.Publisher {
     //                                         
     // Returns:                      GooglePubSub.Publisher instance created
     constructor(projectId, oAuthTokenProvider, topicName) {
+        _projectId = projectId;
+        _oAuthTokenProvider = oAuthTokenProvider;
+        _topic = GooglePubSub._Resource(projectId, oAuthTokenProvider, _GOOGLE_PUB_SUB_TOPICS_TYPE);
+        _topic.setName(topicName);
     }
 
     // Publish the provided message or array of messages to the topic.
@@ -657,8 +1030,51 @@ class GooglePubSub.Publisher {
     //
     // Returns:                      Nothing
     function publish(message, callback = null) {
+        local error = GooglePubSub._utils._validateNonEmptyArg(message, "message");
+        if (error) {
+            _invokePublishCallback(error, null, callback);
+            return;
+        }
+        local messages = GooglePubSub._utils._arrify(message).map(function (msg) {
+            if (!(msg instanceof GooglePubSub.Message)) {
+                msg = GooglePubSub.Message(msg);
+            }
+            error = error || msg._getError();
+            return msg._toJson();
+        });
+
+        if (error) {
+            _invokePublishCallback(error, null, callback);
+            return;
+        }
+
+        _topic.request("POST", ":publish", { "messages" : messages }, function (error, httpResponse) {
+            if (callback) {
+                local messageIds = null;
+                if (!error) {
+                    messageIds = GooglePubSub._utils._getTableValue(httpResponse, "messageIds", null);
+                }
+                _invokePublishCallback(error, messageIds, callback);
+            }
+        }.bindenv(this));
+    }
+
+    // -------------------- PRIVATE METHODS -------------------- //
+
+    function _invokePublishCallback(error, messageIds, callback) {
+        if (callback) {
+            imp.wakeup(0, function () {
+                callback(error, messageIds);
+            });
+        }
     }
 }
+
+enum _PUB_SUB_PULL_STATE {
+    STOPPED,
+    IN_PROGRESS,
+    STOPPING
+};
 
 // This class represents Pub/Sub Pull Subscriber.
 // It allows to receive messages from a Pull Subscription of Google Cloud Pub/Sub service
@@ -671,6 +1087,13 @@ class GooglePubSub.Publisher {
 // another one is active fails with PUB_SUB_ERROR.LIBRARY_ERROR error.
 // Periodic and pending pulls may be canceled by a special function - GooglePubSub.PullSubscriber.stopPull(). 
 class GooglePubSub.PullSubscriber {
+    _projectId = null;
+    _oAuthTokenProvider = null;
+    _subscr = null;
+
+    _periodicPullTimer = null;
+    _pullState = null;
+
     // GooglePubSub.PullSubscriber constructor.
     //
     // Parameters:
@@ -681,6 +1104,11 @@ class GooglePubSub.PullSubscriber {
     //                                         
     // Returns:                      GooglePubSub.PullSubscriber instance created
     constructor(projectId, oAuthTokenProvider, subscrName) {
+        _projectId = projectId;
+        _oAuthTokenProvider = oAuthTokenProvider;
+        _subscr = GooglePubSub._Resource(projectId, oAuthTokenProvider, _GOOGLE_PUB_SUB_SUBSCRIPTIONS_TYPE);
+        _subscr.setName(subscrName);
+        _pullState = _PUB_SUB_PULL_STATE.STOPPED;
     }
 
     // One shot pulling.
@@ -713,7 +1141,11 @@ class GooglePubSub.PullSubscriber {
     //                                     GooglePubSub.Message
     //
     // Returns:                      Nothing
-    function pull(options = null, callback = null)
+    function pull(options = null, callback = null) {
+        if (_checkPullState(callback)) {
+            _pull(options, true, true, callback);
+        }
+    }
 
     // Periodic pulling.
     // Periodically checks for new messages and calls a callback if new messages are available
@@ -753,10 +1185,20 @@ class GooglePubSub.PullSubscriber {
     //                                     GooglePubSub.Message
     //
     // Returns:                      Nothing
-    function periodicPull(period, options = null, callback = null)
+    function periodicPull(period, options = null, callback = null) {
+        local error = GooglePubSub._utils._validatePositiveArg(period, "period", null);
+        if (error) {
+            _invokePullCallback(error, null, false, callback);
+            return;
+        }
+        if (_checkPullState(callback)) {
+            _pullState = _PUB_SUB_PULL_STATE.IN_PROGRESS;
+            _periodicPull(period, options, callback);
+        }
+    }
 
     // Pending (waiting) pulling.
-    // Waits for new messages and calls a callback when new messages are appeared.
+    // Waits for new messages and calls a callback when new messages appear.
     // The new messages are returned in the callback (not more than maxMessages).
     // The messages are automatically acknowledged if autoAck option is set to true.
     // The callback is called only when new messages are available (or in case of an error).
@@ -789,7 +1231,12 @@ class GooglePubSub.PullSubscriber {
     //                                     GooglePubSub.Message
     //
     // Returns:                      Nothing
-    function pendingPull(options = null, callback = null)
+    function pendingPull(options = null, callback = null) {
+        if (_checkPullState(callback)) {
+            _pullState = _PUB_SUB_PULL_STATE.IN_PROGRESS;
+            _pull(options, false, false, callback);
+        }
+    }
 
     // Stops periodic or pending pull operation if it was started by 
     // GooglePubSub.PullSubscriber.periodicPull() or GooglePubSub.PullSubscriber.pendingPull() earlier.
@@ -797,6 +1244,17 @@ class GooglePubSub.PullSubscriber {
     //
     // Returns:                      Nothing
     function stopPull() {
+        if (_pullState == _PUB_SUB_PULL_STATE.IN_PROGRESS) {
+            _pullState = _PUB_SUB_PULL_STATE.STOPPING;
+            if (_periodicPullTimer) {
+                imp.cancelwakeup(_periodicPullTimer);
+                _periodicPullTimer = null;
+                _pullState = _PUB_SUB_PULL_STATE.STOPPED;
+            }
+            if (_subscr.stopPullRequest()) {
+                _pullState = _PUB_SUB_PULL_STATE.STOPPED;
+            }
+        }
     }
 
     // Acknowledges to the Google Pub/Sub service that the message(s) was received.
@@ -820,6 +1278,18 @@ class GooglePubSub.PullSubscriber {
     //
     // Returns:                      Nothing
     function ack(message, callback = null) {
+        local error = GooglePubSub._utils._validateNonEmptyArg(message, "message");
+        if (error) {
+            GooglePubSub._utils._invokeDefaultCallback(error, callback);
+            return;
+        }
+        _subscr.request(
+            "POST",
+            ":acknowledge",
+            { "ackIds" : _getAckIds(message) },
+            function (error, httpResponse) {
+                GooglePubSub._utils._invokeDefaultCallback(error, callback);
+            }.bindenv(this));
     }
 
     // Modifies the ack deadline for a specific message(s).
@@ -844,6 +1314,114 @@ class GooglePubSub.PullSubscriber {
     //
     // Returns:                      Nothing
     function modifyAckDeadline(message, ackDeadlineSeconds, callback = null) {
+        local error = GooglePubSub._utils._validateNonEmptyArg(message, "message") ||
+            GooglePubSub._utils._validatePositiveArg(ackDeadlineSeconds, "ackDeadlineSeconds");
+        if (error) {
+            GooglePubSub._utils._invokeDefaultCallback(error, callback);
+            return;
+        }
+        local body = {
+            "ackIds" : _getAckIds(message),
+            "ackDeadlineSeconds" : ackDeadlineSeconds
+        };
+        _subscr.request("POST", ":modifyAckDeadline", body, function (error, httpResponse) {
+            GooglePubSub._utils._invokeDefaultCallback(error, callback);
+        }.bindenv(this));
+    }
+
+    // -------------------- PRIVATE METHODS -------------------- //
+
+    function _checkPullState(callback) {
+        if (_pullState != _PUB_SUB_PULL_STATE.STOPPED) {
+            _invokePullCallback(
+                GooglePubSub.Error(PUB_SUB_ERROR.LIBRARY_ERROR, GOOGLE_PUB_SUB_PULL_IN_PROGRESS),
+                null, false, callback);
+            return false;
+        }
+        return true;
+    }
+
+    function _periodicPull(period, options = null, callback = null) {
+        _periodicPullTimer = imp.wakeup(period, function () {
+            _periodicPull(period, options, callback);
+        }.bindenv(this));
+        _pull(options, true, false, callback);
+    }
+
+    function _isStopPull() {
+        if (_pullState == _PUB_SUB_PULL_STATE.STOPPING) {
+            _pullState = _PUB_SUB_PULL_STATE.STOPPED;
+            return true;
+        }
+        return false;
+    }
+
+    function _pull(options, returnImmediately, returnEmptyMsgs, callback = null) {
+        if (_isStopPull()) {
+            return;
+        }
+        local maxMessages = GooglePubSub._utils._getTableValue(options, "maxMessages", _GOOGLE_PUB_SUB_PULL_MAX_MESSAGES_DEFAULT);
+        local error = GooglePubSub._utils._validatePositiveArg(maxMessages, "maxMessages");
+        if (error) {
+            _invokePullCallback(error, null, returnEmptyMsgs, callback);
+            return;
+        }
+        local autoAck = GooglePubSub._utils._getTableValue(options, "autoAck", false);
+        local body = {
+            "returnImmediately" : returnImmediately,
+            "maxMessages" : maxMessages
+        };
+        _subscr.request("POST", ":pull", body, function (error, httpResponse) {
+            if (_isStopPull()) {
+                return;
+            }
+            local messages = null;
+            if (!error) {
+                messages = GooglePubSub._utils._getTableValue(httpResponse, "receivedMessages", []).map(function (value) {
+                    local msg = GooglePubSub.Message();
+                    msg._fromJson(value);
+                    error = error || msg._getError();
+                    return msg;
+                });
+            }
+            if (!error && autoAck && messages.len() > 0) {
+                ack(messages, function (ackError) {
+                    _invokePullCallback(ackError, messages, returnEmptyMsgs, callback);
+                }.bindenv(this));
+            }
+            else {
+                _invokePullCallback(error, messages, returnEmptyMsgs, callback);
+            }
+
+            // re-queue pending pull
+            if (!returnImmediately) {
+                if (GooglePubSub._utils._getTableValue(options, "repeat", false) || !error && messages.len() == 0) {
+                    imp.wakeup(0, function () {
+                        _pull(options, returnImmediately, returnEmptyMsgs, callback);
+                    }.bindenv(this));
+                }
+                else {
+                    _pullState = _PUB_SUB_PULL_STATE.STOPPED;
+                }
+            }
+        }.bindenv(this), true);
+    }
+
+    function _invokePullCallback(error, messages, returnEmptyMsgs, callback) {
+        if (callback && (error || returnEmptyMsgs || messages && messages.len() > 0)) {
+            imp.wakeup(0, function () {
+                callback(error, error ? null : messages);
+            });
+        }
+    }
+
+    function _getAckIds(messages) {
+        return GooglePubSub._utils._arrify(messages).map(function (value) {
+            if (value instanceof GooglePubSub.Message) {
+                return value.ackId;
+            }
+            return value;
+        });
     }
 }
 
@@ -851,6 +1429,13 @@ class GooglePubSub.PullSubscriber {
 // It allows to receive messages from a Push Subscription configured with push endpoint URL
 // based on imp Agent URL.
 class GooglePubSub.PushSubscriber {
+    static _pushSubscribers = {};
+
+    _projectId = null;
+    _oAuthTokenProvider = null;
+    _subscrName = null;
+    _subscrs = null;
+
     // GooglePubSub.PushSubscriber constructor.
     //
     // Parameters:
@@ -861,6 +1446,11 @@ class GooglePubSub.PushSubscriber {
     //                                         
     // Returns:                      GooglePubSub.PushSubscriber instance created
     constructor(projectId, oAuthTokenProvider, subscrName) {
+        _projectId = projectId;
+        _oAuthTokenProvider = oAuthTokenProvider;
+        _subscrName = subscrName;
+        _subscrs = GooglePubSub.Subscriptions(projectId, oAuthTokenProvider);
+        http.onrequest(_pushRequestHandler.bindenv(this));
     }
 
     // Checks if the subscription is configured with push endpoint URL
@@ -890,6 +1480,60 @@ class GooglePubSub.PushSubscriber {
     //
     // Returns:                      Nothing
     function setMessagesHandler(messagesHandler, callback = null) {
+        local error = GooglePubSub._utils._validateNonEmptyArg(messagesHandler, "messagesHandler");
+        if (error) {
+            GooglePubSub._utils._invokeDefaultCallback(error, callback);
+            return;
+        }
+        _subscrs.obtain(_subscrName, null, function(error, subscrConfig) {
+            if (!error) {
+                local pushConfig = subscrConfig.pushConfig;
+                if (!pushConfig) {
+                    error = GooglePubSub.Error(PUB_SUB_ERROR.LIBRARY_ERROR, GOOGLE_PUB_SUB_PUSH_SUBSCR_REQUIRED);
+                }
+                else if (pushConfig.pushEndpoint.find(http.agenturl()) != 0) {
+                    error = GooglePubSub.Error(PUB_SUB_ERROR.LIBRARY_ERROR, GOOGLE_PUB_SUB_INTERNAL_PUSH_REQUIRED);
+                }
+                else {
+                    _pushSubscribers[_subscrs._subscr.getResourceName()] <- [ pushConfig.pushEndpoint, messagesHandler ];
+                }
+            }
+            GooglePubSub._utils._invokeDefaultCallback(error, callback);
+        }.bindenv(this));
+    }
+
+    // -------------------- PRIVATE METHODS -------------------- //
+
+    function _pushRequestHandler(request, response) {
+        if (_pushSubscribers.len() == 0) {
+            return;
+        }
+        try {
+            local endpoint = http.agenturl();
+            if (request.path.len() > 0) {
+                endpoint += request.path;
+            }
+            local token = GooglePubSub._utils._getTableValue(request.query, "token", null);
+            if (token) {
+                endpoint = format("%s?token=%s", endpoint, token);
+            }
+            local body = http.jsondecode(request.body);
+            local subscrName = GooglePubSub._utils._getTableValue(body, "subscription", null);
+            if (request.method == "POST" && subscrName &&
+                subscrName in _pushSubscribers && endpoint == _pushSubscribers[subscrName][0]) {
+                local messagesHandler = _pushSubscribers[subscrName][1];
+                local message = GooglePubSub.Message();
+                message._fromJson(body, false);
+                response.send(200, "OK");
+                imp.wakeup(0, function () {
+                    messagesHandler(message._getError(), [message]);
+                });
+                return;
+            }
+            response.send(404, "ERROR");
+        } catch (ex) {
+            response.send(500, "ERROR");
+        }
     }
 }
 
@@ -910,6 +1554,8 @@ class GooglePubSub.Message {
     // Format is RFC3339 UTC "Zulu", accurate to nanoseconds, e.g. "2014-10-02T15:01:23.045123456Z"
     publishTime = null;
 
+    _error = null;
+
     // Message constructor that can be used for message publishing.
     // The message must contain either a non-empty data field, or at least one attribute.
     // Otherwise GooglePubSub.Publisher.publish() method will fail with 
@@ -924,5 +1570,322 @@ class GooglePubSub.Message {
     // Returns:                      Message object that can be send to Pub/Sub using 
     //                               GooglePubSub.Publisher.publish() method.
     constructor(data = null, attributes = null) {
+        this.data = data;
+        this.attributes = attributes;
+
+        _error = GooglePubSub._utils._validateNonEmptyArg(data, "data", false) &&
+            GooglePubSub._utils._validateNonEmptyArg(attributes, "attributes", false);
+    }
+
+    // -------------------- PRIVATE METHODS -------------------- //
+
+    function _toJson() {
+        local result = {};
+        if (data != null) {
+            result["data"] <- http.base64encode(http.jsonencode(data));
+        }
+        if (attributes != null) {
+            result["attributes"] <- attributes;
+        }
+        return result;
+    }
+    
+    function _fromJson(jsonMessage, checkAckId = true) {
+        _error = null;
+        local errDetails = null;
+        ackId = GooglePubSub._utils._getTableValue(jsonMessage, "ackId", null);
+        local message = GooglePubSub._utils._getTableValue(jsonMessage, "message", null);
+        id = GooglePubSub._utils._getTableValue(message, "messageId", null);
+        publishTime = GooglePubSub._utils._getTableValue(message, "publishTime", null);
+        local messageData = GooglePubSub._utils._getTableValue(message, "data", null);
+        if (messageData) {
+            try {
+                data = http.jsondecode(http.base64decode(messageData).tostring());
+            }
+            catch (e) {
+                errDetails = e;
+            }
+        }
+        attributes = GooglePubSub._utils._getTableValue(message, "attributes", null);
+
+        if (!_error && checkAckId && GooglePubSub._utils._isEmpty(ackId)) {
+            errDetails = format("%s: %s", GOOGLE_PUB_SUB_NON_EMPTY_ARG, "ackId");
+        }
+        _error = errDetails ? 
+            GooglePubSub.Error(PUB_SUB_ERROR.PUB_SUB_UNEXPECTED_RESPONSE, errDetails, jsonMessage) :
+            null;
+    }
+
+    function _getError() {
+        return _error;
+    }
+}
+
+// Internal auxiliary class, provides access to Pub/Sub resource (topic or subscription)
+// manipulation methods.
+class GooglePubSub._Resource {
+    _projectId = null;
+    _oAuthTokenProvider = null;
+    _projectName = null;
+
+    _resourceType = null;
+    _resourceName = null;
+    _resourceUrl = null;
+
+    _currPullRequest = null;
+
+    _initError = null;
+
+    constructor(projectId, oAuthTokenProvider, type) {
+        _projectId = projectId;
+        _projectName = projectId ? format("projects/%s", projectId) : "";
+        _oAuthTokenProvider = oAuthTokenProvider;
+        _resourceType = type;
+        _initError = GooglePubSub._utils._validateNonEmptyArg(projectId, "projectId") ||
+            GooglePubSub._utils._validateNonEmptyArg(oAuthTokenProvider, "oAuthTokenProvider", false);
+    }
+
+    function setName(name) {
+        _setResourceName(GooglePubSub._utils._isEmpty(name) ? 
+            null :
+            format("%s/%s/%s", _projectName, _resourceType, name));
+    }
+
+    function getResourceName() {
+        return _resourceName;
+    }
+
+    function getResourceUrl() {
+        return _resourceUrl;
+    }
+
+    function getName(resourceName) {
+        if (resourceName) {
+            local names = split(resourceName, "/");
+            if (names.len() == 4 &&
+                names[0] == "projects" && names[1] == _projectId &&
+                names[2] == _resourceType) {
+                return names[3];
+            }
+        }
+        return null;
+    }
+
+    function obtain(options, createBody, callback) {
+        local autoCreate = GooglePubSub._utils._getTableValue(options, "autoCreate", false);
+        local resourceName = _resourceName;
+        get(function (error, httpResponse) {
+                if (autoCreate && 
+                    error && error.type == PUB_SUB_ERROR.PUB_SUB_REQUEST_FAILED &&
+                    error.httpStatus == 404) {
+                    _setResourceName(resourceName);
+                    create(createBody, callback);
+                }
+                else {
+                    _invokeCallback(error, httpResponse, callback);
+                }
+            }.bindenv(this),
+            !autoCreate);
+    }
+
+    function create(body, callback) {
+        _processRequest("PUT", _resourceUrl, body, callback);
+    }
+
+    function get(callback, logError = true) {
+        _processRequest("GET", _resourceUrl, null, callback, logError);
+    }
+    
+    function remove(callback) {
+        _processRequest("DELETE", _resourceUrl, null, callback);
+    }
+
+    function list(options, callback) {
+        _list(format("%s/%s", _GOOGLE_PUB_SUB_BASE_URL, _projectName), options, false, callback);
+    }
+
+    function getIamPolicy(callback) {
+        request("GET", ":getIamPolicy", null, callback);
+    }
+  
+    function setIamPolicy(policy, callback) {
+        request("POST", ":setIamPolicy", { "policy" : policy }, callback);
+    }
+
+    function testIamPermissions(permissions, callback) {
+        permissions = GooglePubSub._utils._arrify(permissions);
+        request("POST", ":testIamPermissions", { "permissions" : permissions }, callback);
+    }
+
+    function request(method, urlSuffix, body, callback, isPull = false) {
+        _processRequest(method, _resourceUrl ? format("%s%s", _resourceUrl, urlSuffix) : null, body, callback, true, isPull);
+    }
+
+    function stopPullRequest() {
+        if (_currPullRequest) {
+            _currPullRequest.cancel();
+            _currPullRequest = null;
+            return true;
+        }
+        return false;
+    }
+
+    function _setResourceName(resourceName) {
+        if (GooglePubSub._utils._isEmpty(resourceName)) {
+            _resourceName = null;
+            _resourceUrl = null;
+        }
+        else {
+            _resourceName = resourceName;
+            _resourceUrl = format("%s/%s", _GOOGLE_PUB_SUB_BASE_URL, _resourceName);
+        }
+    }
+
+    function _list(baseUrl, options, isSubResourcesList, callback) {
+        if (GooglePubSub._utils._getTableValue(options, "paginate", false)) {
+            _listRequest(baseUrl, options, isSubResourcesList, callback);
+        }
+        else {
+            _listAll([], baseUrl, options, isSubResourcesList, callback);
+        }
+    }
+
+    function _listRequest(baseUrl, options, isSubResourcesList, callback) {
+        local paginate = GooglePubSub._utils._getTableValue(options, "paginate", false);
+        local pageSize = paginate ?
+            GooglePubSub._utils._getTableValue(options, "pageSize", _GOOGLE_PUB_SUB_LIST_PAGE_SIZE_DEFAULT) :
+            _GOOGLE_PUB_SUB_LIST_PAGE_SIZE_DEFAULT;
+        local error = GooglePubSub._utils._validatePositiveArg(pageSize, "pageSize");
+        if (error) {
+            _invokeListCallback(error, null, null, options, callback);
+            return;
+        }
+
+        local url = format("%s/%s?pageSize=%d", baseUrl, _resourceType, pageSize);
+        local pageToken = GooglePubSub._utils._getTableValue(options, "pageToken", null);
+        if (pageToken) {
+            url = format("%s&pageToken=%s", url, pageToken);
+        }
+
+        _processRequest("GET", url, null, function (error, httpResponse) {
+            local resourceNames = [];
+            if (!error) {
+                local resources = GooglePubSub._utils._getTableValue(httpResponse, _resourceType, null);
+                if (resources) {
+                    resourceNames = resources.map(function (resource) {
+                        local fullName = isSubResourcesList ?
+                            resource :
+                            GooglePubSub._utils._getTableValue(resource, "name", null);
+                        local result = getName(fullName);
+                        if (!result) {
+                            error = error || GooglePubSub.Error(
+                                PUB_SUB_ERROR.PUB_SUB_UNEXPECTED_RESPONSE,
+                                format("%s %s", GOOGLE_PUB_SUB_INVALID_FORMAT, "resource name"),
+                                httpResponse);
+                        }
+                        return result;
+                    }.bindenv(this));
+                }
+            }
+            _invokeListCallback(error, httpResponse, resourceNames, options, callback);
+        }.bindenv(this));
+    }
+
+    function _listAll(result, baseUrl, options, isSubResourcesList, callback) {
+        _listRequest(baseUrl, options, isSubResourcesList,
+            function (error, resourceNames, nextOptions) {
+                if (!error) {
+                    result.extend(resourceNames);
+                    if (nextOptions) {
+                        _listAll(result, baseUrl, nextOptions, isSubResourcesList, callback);
+                    }
+                }
+                if (error || !nextOptions) {
+                    _invokeListCallback(error, null, result, options, callback);
+                }
+            }.bindenv(this));
+    }
+
+    function _invokeListCallback(error, httpResponse, resourceNames, options, callback) {
+        if (callback) {
+            local nextOptions = null;
+            if (!error) {
+                local nextPageToken = GooglePubSub._utils._getTableValue(httpResponse, "nextPageToken", null);
+                if (nextPageToken) {
+                    nextOptions = options ? clone(options) : {};
+                    nextOptions["pageToken"] <- nextPageToken;
+                }
+            }
+            imp.wakeup(0, function () {
+                callback(error, error ? null : resourceNames, nextOptions);
+            });
+        }
+    }
+
+    function _processRequest(method, url, body, callback, logError = true, isPull = false) {
+        local error = _initError ||
+            GooglePubSub._utils._validateNonEmptyArg(url, 
+                format("%sName", _resourceType == _GOOGLE_PUB_SUB_TOPICS_TYPE ? "topic" : "subscr"));
+        if (error) {
+            _invokeCallback(error, null, callback);
+            return;
+        }
+
+        _oAuthTokenProvider.acquireAccessToken(function (token, error) {
+            if (error) {
+                _invokeCallback(GooglePubSub.Error(PUB_SUB_ERROR.LIBRARY_ERROR, 
+                    format("%s: %s", GOOGLE_PUB_SUB_TOKEN_ACQUISITION_ERROR, error),
+                    null, callback));
+            }
+            else {
+                local headers = {
+                    "Authorization" : format("Bearer %s", token),
+                    "Content-Type" : "application/json"
+                };
+                
+                GooglePubSub._utils._logDebug(format("Doing the request: %s %s, body: %s", method, url, http.jsonencode(body)));
+                
+                local request = http.request(method, url, headers, body ? http.jsonencode(body) : "");
+                if (isPull) {
+                    _currPullRequest = request;
+                }
+                request.sendasync(function (response) {
+                    _processResponse(response, callback, logError, isPull);
+                }.bindenv(this));
+            }
+        }.bindenv(this));
+    }
+
+    function _processResponse(response, callback, logError = true, isPull = false) {
+        if (isPull) {
+            _currPullRequest = null;
+        }
+        GooglePubSub._utils._logDebug(format("Response status: %d, body: %s", response.statuscode, response.body));
+
+        local errType = null;
+        local errDetails = null;
+        local httpStatus = response.statuscode;
+        if (httpStatus < 200 || httpStatus >= 300) {
+            errType = PUB_SUB_ERROR.PUB_SUB_REQUEST_FAILED;
+            errDetails = format("%s: %i", GOOGLE_PUB_SUB_REQUEST_FAILED, httpStatus);
+        }
+        try {
+            response.body = (response.body == "") ? {} : http.jsondecode(response.body);
+        } catch (e) {
+            if (!errType) {
+                errType = PUB_SUB_ERROR.PUB_SUB_UNEXPECTED_RESPONSE;
+                errDetails = e;
+            }
+        }
+        _invokeCallback(errType ? GooglePubSub.Error(errType, errDetails, response.body, httpStatus, logError) : null,
+            response.body, callback);
+    }
+
+    function _invokeCallback(error, httpResponse, callback) {
+        if (callback) {
+            imp.wakeup(0, function () {
+                callback(error, httpResponse);
+            });
+        }
     }
 }

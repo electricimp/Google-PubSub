@@ -1,0 +1,14 @@
+{
+    "modelId": "RYfxofJwj4_K",
+    "devices": [
+        "23522f6938a609ee"
+    ],
+    "agentFile": "GooglePubSub.agent.lib.nut",
+    "deviceFile": false,
+    "stopOnFailure": false,
+    "timeout": 120,
+    "tests": [
+        "*.test.nut",
+        "tests/**/*.test.nut"
+    ]
+}

@@ -29,9 +29,11 @@ To manage Pub/Sub resources associated with different Projects, you may use diff
 
 For more information see [Google Cloud Project description](https://cloud.google.com/resource-manager/docs/cloud-platform-resource-hierarchy#projects) and [Creating and Managing Projects](https://cloud.google.com/resource-manager/docs/creating-managing-projects)
 
+An example of how to create and configure a Google Cloud project see [here](./Examples/README.md#google-cloud-account-configuration).
+
 ## Library Usage
 
-The library API is detailed in the source file, [here](./GooglePubSub.agent.lib.nut).
+The library API is described in details in the source file, [here](./GooglePubSub.agent.lib.nut).
 
 ### Main Components
 
@@ -169,8 +171,7 @@ topics <- GooglePubSub.Topics(PROJECT_ID, oAuthTokenProvider);
 topics.obtain(TOPIC_NAME, { "autoCreate" : true }, function(error) {
     if (error) {
         server.error(error.details);
-    }
-    else {
+    } else {
         // the topic has existed or created successfully
     }
 });
@@ -179,8 +180,7 @@ topics.obtain(TOPIC_NAME, { "autoCreate" : true }, function(error) {
 topics.remove(TOPIC_NAME, function(error) {
     if (error) {
         server.error(error.details);
-    }
-    else {
+    } else {
         // the topic removed successfully
     }
 });
@@ -189,8 +189,7 @@ topics.remove(TOPIC_NAME, function(error) {
 topics.list({ "paginate" : false }, function(error, topicNames, nextOptions) {
     if (error) {
         server.error(error.details);
-    }
-    else {
+    } else {
         // topicNames contains names of all topics registered to the project
         foreach (topic in topicNames) {
             // process topics individually
@@ -202,8 +201,7 @@ topics.list({ "paginate" : false }, function(error, topicNames, nextOptions) {
 function topicsListCallback(error, topicNames, nextOptions) {
     if (error) {
         server.error(error.details);
-    }
-    else {
+    } else {
         // topicNames contains limited number of topic names
         foreach (topic in topicNames) {
             // process topics individually
@@ -293,6 +291,8 @@ For message receiving the library provides two other components:
 
 - To receive messages from a push subscription, [GooglePubSub.PushSubscriber](#pullsubscriber-class) class may be used. But it works only for a subscription configured with a push endpoint which is based on URL of the IMP agent where the library is running. Auxiliary *GooglePubSub.Subscriptions.getImpAgentEndpoint()* method may be used to generate such an URL and, after that, the URL may be specified as a push endpoint.
 
+To create and use any push subscription, the push endpoint must be registered in Google Cloud Platform as described in "Registering endpoints" section of the [Google Cloud Pub/Sub Push Subscriber Guide](https://cloud.google.com/pubsub/docs/push).
+
 #### Examples
 
 ```squirrel
@@ -308,13 +308,11 @@ subscrs.obtain(SUBSCR_NAME, null, function(error, subscrConfig) {
     if (error) {
         if (error.type == PUB_SUB_ERROR.PUB_SUB_REQUEST_FAILED && error.httpStatus == 404) {
             // the subscription doesn't exist
-        }
-        else {
+        } else {
             // a different error occurs
             server.error(error.details);
         }
-    }
-    else {
+    } else {
         // the subscription exists
     }
 });
@@ -326,8 +324,7 @@ subscrs.obtain(
     function(error, subscrConfig) {
         if (error) {
             server.error(error.details);
-        }
-        else {
+        } else {
             // the subscription is obtained
         }
     });
@@ -345,8 +342,7 @@ subscrs.obtain(
     function(error, subscrConfig) {
         if (error) {
             server.error(error.details);
-        }
-        else {
+        } else {
             // the subscription is obtained
         }
     });
@@ -355,8 +351,7 @@ subscrs.obtain(
 subscrs.remove(SUBSCR_NAME_2, function(error) {
     if (error) {
         server.error(error.details);
-    }
-    else {
+    } else {
         // the subscription removed successfully
     }
 });
@@ -365,8 +360,7 @@ subscrs.remove(SUBSCR_NAME_2, function(error) {
 subscrs.list({ "topicName" : TOPIC_NAME }, function(error, subscrNames, nextOptions) {
     if (error) {
         server.error(error.details);
-    }
-    else {
+    } else {
         // subscrNames contains names of all subscriptions related to the topic TOPIC_NAME
         foreach (subscr in subscrNames) {
             // process subscriptions individually
@@ -387,7 +381,7 @@ The received messages are provided as instances of [GooglePubSub.Message](#messa
 
 - periodic pulling - *GooglePubSub.PullSubscriber.periodicPull()* method. It periodically checks for new messages and calls a callback if new messages are available at a time of a check. It might be used in a case when an application does not need to react on new messages as soon as possible but rather checks and get messages periodically. Make sure the required period is not too small, otherwise consider to use *GooglePubSub.PullSubscriber.pendingPull()* method.
 
-- pending (waiting) pulling - *GooglePubSub.PullSubscriber.pendingPull()* method. It waits for new messages and calls a callback when new messages are appeared. Optionally, it may automatically recall the same pending pull operation after the callback is executed. This operation might be used in a case when an application needs to react on new messages as soon as possible.
+- pending (waiting) pulling - *GooglePubSub.PullSubscriber.pendingPull()* method. It waits for new messages and calls a callback when new messages appear. Optionally, it may automatically recall the same pending pull operation after the callback is executed. This operation might be used in a case when an application needs to react on new messages as soon as possible.
 
 Only one pull operation can be active at a time. An attempt to call a new pull operation while another one is active fails with *PUB_SUB_ERROR.LIBRARY_ERROR* error.
 Periodic and pending pull operations may be canceled by a special method - *GooglePubSub.PullSubscriber.stopPull()*. 
@@ -467,8 +461,7 @@ function messagesHandler(error, messages) {
 pushSubscriber.setMessagesHandler(messagesHandler, function(error) {
     if (!error) {
         // push messages handler set successfully
-    }
-    else if (error.type == PUB_SUB_ERROR.LIBRARY_ERROR) {
+    } else if (error.type == PUB_SUB_ERROR.LIBRARY_ERROR) {
         // PushSubscriber cannot be used for the specified subscription
         // (e.g. the subscription's push endpoint does not match the IMP agent URL)
     }
@@ -500,8 +493,7 @@ topics <- GooglePubSub.Topics(PROJECT_ID, oAuthTokenProvider);
 topics.iam().getPolicy(TOPIC_NAME, function(error, policy) {
     if (error) {
         server.error(error.details);
-    }
-    else {
+    } else {
         // the policy obtained successfully
         foreach (binding in policy.bindings) {
             // process policy bindings
@@ -529,10 +521,10 @@ subscrs.iam().testPermissions(
     });
 ```
 
-## Samples
+## More Examples
 
-TBD
+Working examples are provided in [./Examples](./Examples) folder and described [here](./Examples/README.md).
 
 ## License
 
-The Predix library is licensed under the [MIT License](./LICENSE). - TBD
+The Predix library is licensed under the [MIT License](./LICENSE)
