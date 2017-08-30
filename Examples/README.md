@@ -4,13 +4,11 @@
 
 This readme describes example applications provided with [GooglePubSub library](../README.md).
 
-Before running an example application you need to set the configuration constants in the application (IMP agent) source code. See [Examples Setup](#examples-setup) section below.
-
 The following example applications are provided:
-- *ProjectInfo*
 - *Publisher*
 - *PullSubscriber*
 - *PushSubscriber*
+- *ProjectInfo*
 
 To see the messages comming you need to run *PullSubscriber* and/or *PushSubscriber* examples in parallel with *Publisher* example.
 The recommended order of the examples running:
@@ -18,20 +16,7 @@ The recommended order of the examples running:
 - run *PullSubscriber* example on the agent of your second IMP device
 - run *PushSubscriber* example on the agent of your third IMP device
 
-*ProjectInfo* example may be ran many times at any moment. But note, it displays nothing if no topics/subscriptions have been created in your project (e.g. by running other provided examples). 
-
-### ProjectInfo Example
-
-This example collects and prints information about Pub/Sub topics and subscriptions which belong to the specified (by *PROJECT_ID* configuration constant) Google Cloud Project.
-
-The following information is printed out:
-- list of topics
-- IAM Policy of every topic
-- list of subscriptions related to every topic
-- configuration of every subscription
-- IAM Policy of every subscription
-
-![ProjectInfo example](http://imgur.com/VDKgV7c.png)
+*ProjectInfo* example may be run many times at any moment. But note, it displays nothing if no topics/subscriptions have been created in your project (e.g. by running other provided examples). 
 
 ### Publisher Example
 
@@ -79,7 +64,29 @@ Additional setup is required before running this application. See [Additional Se
 
 ![PushSubscriber example](http://imgur.com/HjXJrfz.png)
 
+### ProjectInfo Example
+
+This example collects and prints information about Pub/Sub topics and subscriptions which belong to the specified (by *PROJECT_ID* configuration constant) Google Cloud Project.
+
+The following information is printed out:
+- list of topics
+- IAM Policy of every topic
+- list of subscriptions related to every topic
+- configuration of every subscription
+- IAM Policy of every subscription
+
+![ProjectInfo example](http://imgur.com/VDKgV7c.png)
+
 ## Examples Setup
+
+Copy and paste the code for the example you wish to run.  
+
+- [*Publisher*](./Publisher.agent.nut)
+- [*PullSubscriber*](./PullSubscriber.agent.nut)
+- [*PushSubscriber*](./PushSubscriber.agent.nut)
+- [*ProjectInfo*](./ProjectInfo.agent.nut)
+
+Before running an example application you need to set the configuration constants in the application (IMP agent) source code. The instructions below will walk you through the necessary steps. The PushSubscriber will need addtional setup. These are outlined in the [Additional Setup For PushSubscriber Example](#additional-setup-for-pushsubscriber-example) section.
 
 ### Common Setup For All Examples
 
@@ -102,7 +109,7 @@ Copy ID of your project, the value will be used as **PROJECT_ID** configuration 
 - Follow the instructions from [JWT Profile for OAuth 2.0](https://github.com/electricimp/OAuth-2.0/tree/master/examples#jwt-profile-for-oauth-20) to obtain all the required constants for OAuth 2.0 JWT Profile configuration - **GOOGLE_ISS, GOOGLE_SECRET_KEY, AWS_LAMBDA_REGION, AWS_ACCESS_KEY_ID, AWS_SECRET_ACCESS_KEY**.
 
 #### Example constants setup
-- Set the example code configuration constants (**PROJECT_ID, GOOGLE_ISS, GOOGLE_SECRET_KEY, AWS_LAMBDA_REGION, AWS_ACCESS_KEY_ID, AWS_SECRET_ACCESS_KEY**) with the values retrieved on the previous steps.
+- Set the example code configuration constants (**PROJECT_ID, GOOGLE_ISS, GOOGLE_SECRET_KEY, AWS_LAMBDA_REGION, AWS_ACCESS_KEY_ID, AWS_SECRET_ACCESS_KEY**) with the values retrieved on the previous steps. You can use the same configuration constants when running examples in parallel.  
 ![Examples config](http://imgur.com/G0Mw9uv.png)
 
 ### Additional Setup For PushSubscriber Example

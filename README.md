@@ -23,7 +23,7 @@ Before working with Google Cloud Pub/Sub Service you need to:
 
 ### Google Cloud Project
 
-Google Cloud Project is a basic entity of Google Cloud Platform which allows to create, configure and use all Cloud Platform resources and services, including Pub/Sub.
+Google Cloud Project is a basic entity of Google Cloud Platform which allows users to create, configure and use all Cloud Platform resources and services, including Pub/Sub.
 All Pub/Sub Topics and Subscriptions are owned by a specific Project.
 To manage Pub/Sub resources associated with different Projects, you may use different instances of the classes from this library.
 
@@ -39,15 +39,15 @@ The library API is described in details in the source file, [here](./GooglePubSu
 
 The library consists of five independent main components (classes). You can instantiate and use any of these components in your IMP agent code depending on your application requirements.
 
-- [GooglePubSub.Topics class](#topics-class): provides access to Pub/Sub Topics manipulation methods. One instance of this class is enough to manage all topics of one Project.
+- [GooglePubSub.Topics class](#topics-class): provides access to Pub/Sub Topics management methods. One instance of this class is enough to manage all topics of one Project.
 
-- [GooglePubSub.Subscriptions class](#subscriptions-class): provides access to Pub/Sub Subscriptions manipulation methods. One instance of this class is enough to manage all subscriptions of one Project.
+- [GooglePubSub.Subscriptions class](#subscriptions-class): provides access to Pub/Sub Subscriptions management methods. One instance of this class is enough to manage all subscriptions of one Project.
 
-- [GooglePubSub.Publisher class](#publisher-class): allows to publish messages to a topic. One instance of this class allows to publish messages to one topic.
+- [GooglePubSub.Publisher class](#publisher-class): allows an imp to publish messages to a topic. One instance of this class allows an imp to publish messages to one topic.
 
-- [GooglePubSub.PullSubscriber class](#pullsubscriber-class): allows to receive messages from a pull subscription. One instance of this class allows to receive messages from one pull subscription.
+- [GooglePubSub.PullSubscriber class](#pullsubscriber-class): allows an imp to receive messages from a pull subscription. One instance of this class allows an imp to receive messages from one pull subscription.
 
-- [GooglePubSub.PushSubscriber class](#pushsubscriber-class): allows to receive messages from a push subscription configured with IMP agent related URL as a push endpoint. One instance of this class allows to receive messages from one push subscription.
+- [GooglePubSub.PushSubscriber class](#pushsubscriber-class): allows an imp to receive messages from a push subscription configured with that imp's agent URL as a push endpoint. One instance of this class allows an imp to receive messages from one push subscription.
  
 ### Instantiation
 
@@ -57,25 +57,29 @@ To instantiate any [main component](#main-components) of this library you need t
 
 - [Provider of access tokens](#access-tokens-provider) suitable for Google Cloud Pub/Sub service requests authentication.
 
-#### Access Tokens Provider
+#### Access Token Provider
 
 Information about Google Cloud Pub/Sub service authentication see [here](https://cloud.google.com/docs/authentication).
 
-The library requires an external provider of access tokens to access Google Cloud services. The provider must export one method: 
+The library requires an external provider of access tokens to access Google Cloud services. The provider must contain an *acquireAccessToken()* method that takes one required parameter, a handler that is called when an access token is acquired or an error occurs. The handler takes two required parameters: *token*, a string representation of access token, and *error*, a string with error details or null if no error occurred. 
+
+The Access Token Provider may be an application containing the following function:
+
 ```squirrel
-acquireAccessToken(tokenReadyCallback)
-```
-where *tokenReadyCallback* is a handler called when an access token is acquired or an error occurs. It has the following signature:
-```squirrel
-tokenReadyCallback(token, error)
-where
-  token : string    String representation of access token.
-  error : string    String with error details, null if no error occurred.
+function tokenReadyCallback(token, error) {
+    if (error) {
+        server.error(error);
+    } else {
+        server.log("The access token has the value: " + token);
+    }
+}
+
+acquireAccessToken(tokenReadyCallback);
 ```
 
-Access Tokens Provider may be an application written code or any external library, e.g. [OAuth2.JWTProfile.Client OAuth2 library](https://github.com/electricimp/OAuth-2.0).
+Or any external library, e.g. [OAuth2.JWTProfile.Client OAuth2 library](https://github.com/electricimp/OAuth-2.0), which already contains the *acquireAccessToken()* method.
 
-#### Examples
+##### Example: OAuth2 JWTProfile Access Token Provider
 
 ```squirrel
 // GooglePubSub library
@@ -120,16 +124,16 @@ const TOPIC_NAME = "my_topic";
 publisher <- GooglePubSub.Publisher(PROJECT_ID, oAuthTokenProvider, TOPIC_NAME);
 ```
 
-### Callbacks and Errors Processing
+### Callbacks and Error Processing
 
-All requests that are made to Google Cloud Pub/Sub service are asynchronous. Every method that sends a request can take an optional callback function which will be called when the operation is completed, successfully or not. Details of every callback are described in the corresponding methods.
+All requests that are made to Google Cloud Pub/Sub service are asynchronous. Every method that sends a request can take an optional callback parameter, a function which will be called when the operation is completed, successfully or not. Details of every callback are described in the corresponding methods.
 
-Every callback has at least one parameter - *error* - an instance of *GooglePubSub.Error* class. If *error* is *null* the operation has been executed successfully. Otherwise, *error* contains the details of the occurred error:
+Every callback has at least one parameter - *error* - an instance of *GooglePubSub.Error* class. If *error* is `null` the operation has been executed successfully. Otherwise, *error* contains the details of the occurred error:
 
-- *type* - error type,
-- *details* - human readable details of the error,
-- *httpStatus* - the returned HTTP status code (not for all error types),
-- *httpResponse* - response body of the failed request (not for all error types).
+- *type* - error type
+- *details* - human readable details of the error
+- *httpStatus* - the returned HTTP status code (not for all error types)
+- *httpResponse* - response body of the failed request (not for all error types)
 
 Error types are the following:
 
@@ -141,17 +145,21 @@ Error types are the following:
 
 ## Message Class
 
-*GooglePubSub.Message* is an auxiliary class that represents Google Cloud Pub/Sub message - a combination of data and optional attributes that moves through the service.
+*GooglePubSub.Message* is an auxiliary class that represents Google Cloud Pub/Sub message - a combination of data (any type) and attributes (a table) that move through the service. Both *data* and *attributes* are optional.
 
 *GooglePubSub.Message* instances are received using [GooglePubSub.PullSubscriber](#pullsubscriber-class) and [GooglePubSub.PushSubscriber](#pushsubscriber-class) classes.
 
 *GooglePubSub.Message* instances may be sent to Pub/Sub service using [GooglePubSub.Publisher](#publisher-class) class.
 
+```squirrel
+local gMsg = GooglePubSub.Message("Test message", { "attr1" : "value1", "attr2" : "value2" });
+```
+
 ## Topics Class
 
 Topic is a named entity that represents a feed of messages. Any message is sent to Google Cloud Pub/Sub service on a specified topic.
 
-*GooglePubSub.Topics* class provides access to Pub/Sub topics manipulation methods.
+*GooglePubSub.Topics* class provides access to Pub/Sub topics management methods.
 One instance of this class is enough to manage all topics of one Project specified in the class constructor.
 It can be used to check existence, create, delete topics of the Project and obtain a list of the topics registered to the Project.
 
@@ -172,7 +180,8 @@ topics.obtain(TOPIC_NAME, { "autoCreate" : true }, function(error) {
     if (error) {
         server.error(error.details);
     } else {
-        // the topic has existed or created successfully
+        // the topic exists or has been created
+        // you can now publish or receive messages
     }
 });
 
@@ -220,13 +229,13 @@ topics.list({ "paginate" : true, "pageSize" : 5 }, topicsListCallback);
 
 ## Publisher Class
 
-*GooglePubSub.Publisher* class allows to publish messages to a specific topic of Google Cloud Pub/Sub service.
-One instance of this class publishes messages to one topic which belongs to a Project. The both, project and topic, are specified in the class constructor.
+*GooglePubSub.Publisher* class allows the agent to publish messages to a specific topic of Google Cloud Pub/Sub service.
+One instance of this class publishes messages to one topic which belongs to a Project. Both the project and topic are specified in the class constructor.
 
 The class provides only one method - *GooglePubSub.Publisher.publish()* - which accepts the following data as a message:
-- a raw data of any type. It may be used to send a data value without attributes.
+- raw data of any type. It may be used to send a data value without attributes.
 - an instance of [GooglePubSub.Message](#message-class) class. It may be used to send a message with attributes, with or without a data value.
-- an array of raw values or an array of [GooglePubSub.Message](#message-class) instances. It may be used to send several messages by one request.
+- an array of raw values or an array of [GooglePubSub.Message](#message-class) instances. It may be used to send several messages with one request.
 
 #### Examples
 
@@ -275,21 +284,21 @@ Subscription name is an identifier of the subscription, unique within the Projec
 
 More information about Google Cloud Pub/Sub subscriptions is [here](https://cloud.google.com/pubsub/docs/subscriber).
 
-*GooglePubSub.Subscriptions* class provides access to Pub/Sub subscriptions manipulation methods.
+*GooglePubSub.Subscriptions* class provides access to Pub/Sub subscriptions management methods.
 One instance of this class is enough to manage all subscriptions of one Project specified in the class constructor.
 It can be used to check existence, create, configure, delete subscriptions of the Project and obtain a list of the subscriptions registered to the Project or related to a topic.
-The class allows to manipulate with the both, pull and push, types of subscription.
+The class allows to management for both, pull and push, types of subscriptions.
 
 A subscription configuration is encapsulated in *GooglePubSub.SubscriptionConfig* class that may include additional configuration parameters for a push subscription which are encapsulated in *GooglePubSub.PushConfig* class. The push subscription configuration has *pushEndpoint* parameter - URL to a custom endpoint that messages should be pushed to.
 
 It is possible to change a push subscription to a pull one or vice versa - using *GooglePubSub.Subscriptions.modifyPushConfig()* method.
 
-*GooglePubSub.Subscriptions* class allows to manage Pub/Sub subscriptions but is not intended to receive messages.
+*GooglePubSub.Subscriptions* class allows to the imp to manage Pub/Sub subscriptions but is not intended to receive messages.
 For message receiving the library provides two other components:
 
 - To receive messages from a pull subscription, [GooglePubSub.PullSubscriber](#pullsubscriber-class) class may be used.
 
-- To receive messages from a push subscription, [GooglePubSub.PushSubscriber](#pullsubscriber-class) class may be used. But it works only for a subscription configured with a push endpoint which is based on URL of the IMP agent where the library is running. Auxiliary *GooglePubSub.Subscriptions.getImpAgentEndpoint()* method may be used to generate such an URL and, after that, the URL may be specified as a push endpoint.
+- To receive messages from a push subscription, [GooglePubSub.PushSubscriber](#pullsubscriber-class) class may be used. This only works for a subscription configured with a push endpoint which is based on URL of the IMP agent where the library is running. Auxiliary *GooglePubSub.Subscriptions.getImpAgentEndpoint()* method may be used to generate such an URL and, after that, the URL may be specified as a push endpoint.
 
 To create and use any push subscription, the push endpoint must be registered in Google Cloud Platform as described in "Registering endpoints" section of the [Google Cloud Pub/Sub Push Subscriber Guide](https://cloud.google.com/pubsub/docs/push).
 
@@ -523,8 +532,8 @@ subscrs.iam().testPermissions(
 
 ## More Examples
 
-Working examples are provided in [./Examples](./Examples) folder and described [here](./Examples/README.md).
+Working examples are provided in [Examples](./Examples) folder and described [here](./Examples/README.md).
 
 ## License
 
-The Predix library is licensed under the [MIT License](./LICENSE)
+The Google-PubSub library is licensed under the [MIT License](./LICENSE)
