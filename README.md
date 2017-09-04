@@ -579,7 +579,7 @@ Provides access to Google Pub/Sub Topics manipulation methods.
 
 Parameters:
 - *projectId* - *string* - Google Cloud Project ID
-- *oAuthTokenProvider* - *object* - provider of access tokens suitable for Google Pub/Sub service requests authentication ([see here](#access-tokens-provider))
+- *oAuthTokenProvider* - *object* - provider of access tokens suitable for Google Pub/Sub service requests authentication, [see here](#access-token-provider)
 
 Returns:
 - *GooglePubSub.Topics* instance
@@ -598,7 +598,7 @@ Parameters:
 
 Returns nothing. A result of the operation may be obtained via the callback function.
 
-The callback function signature: *callback(error)*, where
+The callback function signature: **callback(error)**, where:
 - *error* - *GooglePubSub.Error* - error details, *null* if the operation succeeds
 
 #### *GooglePubSub.Topics.remove(topicName, callback = null)*
@@ -616,7 +616,7 @@ Parameters:
 
 Returns nothing. A result of the operation may be obtained via the callback function.
 
-The callback function signature: *callback(error)*, where
+The callback function signature: **callback(error)**, where:
 - *error* - *GooglePubSub.Error* - error details, *null* if the operation succeeds
 
 #### *GooglePubSub.Topics.list(options = null, callback = null)*
@@ -632,7 +632,7 @@ Parameters:
 
 Returns nothing. A result of the operation may be obtained via the callback function.
 
-The callback function signature: *callback(error, topicNames, nextOptions = null)*, where
+The callback function signature: **callback(error, topicNames, nextOptions = null)**, where:
 - *error* - *GooglePubSub.Error* - error details, *null* if the operation succeeds
 - *topicNames* - *array* of *strings* - names of the topics
 - *nextOptions* - *table* of key-value *strings* - value of the *options* table that can be directly used as an argument for subsequent paginated *GooglePubSub.Topics.list()* call; it contains *pageToken* returned by the currently executed *GooglePubSub.Topics.list()* call. *nextOptions* is null in one of the following cases:
