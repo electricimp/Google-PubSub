@@ -521,3 +521,52 @@ Working examples are provided in [Examples](./Examples) folder and described [he
 ## License
 
 The Google-PubSub library is licensed under the [MIT License](./LICENSE)
+
+## Google PubSub Library API
+
+### Class *GooglePubSub*
+
+#### *GooglePubSub.setDebug(value)*
+
+Enables/disables the library debug output (including errors logging). Disabled by default.
+
+Parameters:
+
+- *value* - *boolean* - *true* to enable / *false* to disable debug output
+
+### Class *GooglePubSub.Error*
+
+Represents an error returned by the library.
+
+Public fields:
+- *type* - *PUB_SUB_ERROR* - error type, one of the *PUB_SUB_ERROR* enum values:
+  - *PUB_SUB_ERROR.LIBRARY_ERROR* - the library is wrongly initialized, or a method is called with invalid argument(s), or an internal error. The error details can be found in the *details* field.
+  - *PUB_SUB_ERROR.PUB_SUB_REQUEST_FAILED* - HTTP request to Google Cloud Pub/Sub service fails. The error details can be found in the *details*, *httpStatus* and *httpResponse* fields.
+  - *PUB_SUB_ERROR.PUB_SUB_UNEXPECTED_RESPONSE* - unexpected response from Google Pub/Sub service. The error details can be found in the *details* and *httpResponse* fields.
+- *details* - *string* - error details
+- *httpStatus* - *integer* - HTTP status code, *null* if *type* is *PUB_SUB_ERROR.LIBRARY_ERROR*
+- *httpResponse* - *table* - Response body of the failed request,  *null* if *type* is *PUB_SUB_ERROR.LIBRARY_ERROR*
+
+### Class *GooglePubSub.Message*
+
+Represents Google Pub/Sub Message: a combination of any format data and optional attributes that a publisher sends to a topic and subscriber(s) receive.
+
+Public fields:
+- *id* - *string* - ID of the message
+- *ackId* - *string* - ID used to acknowledge the message receiving
+- *data* - any type - the message data
+- *attributes* - *table* - optional attributes of the message
+- *publishTime* - *string* - the time when the message was published to the Google Cloud Pub/Sub service. Format is RFC3339 UTC "Zulu", accurate to nanoseconds, e.g. "2014-10-02T15:01:23.045123456Z"
+
+#### Constructor *GooglePubSub.Message(data = null, attributes = null)*
+
+Message constructor that can be used for message publishing.
+The message must contain either a non-empty data field, or at least one attribute. Otherwise *GooglePubSub.Publisher.publish()* method will fail with *PUB_SUB_ERROR.LIBRARY_ERROR* error.
+
+Parameters:
+- *data* - any type - optional - the message data
+- *attributes* - *table* - optional - the message attributes
+
+Returns:
+- Message object that can be sent to Google Pub/Sub service using *GooglePubSub.Publisher.publish()* method.
+
