@@ -640,6 +640,98 @@ The callback function signature: **callback(error, topicNames, nextOptions = nul
   - *paginate* option value was *false*
   - the operation fails
 
+#### *GooglePubSub.Topics.list(options = null, callback = null)*
+
+Get a list of the topics (names of all topics) registered to the project.
+
+Parameters:
+<table>
+  <thead>
+    <tr>
+      <th>Name</th>
+      <th>Type</th>
+      <th>Description</th>
+    </tr>
+  </thead>
+  <tbody>
+    <tr>
+      <td> <i> options </i> </td>
+      <td> Table (optional) </td>
+      <td>
+        method options. The valid keys are:
+        <table>
+          <thead>
+            <tr>
+              <th>Name</th>
+              <th>Type</th>
+              <th>Description</th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr>
+              <td> <i> paginate </i> </td>
+              <td> Boolean </td>
+              <td> if <i>true</i>, the operation returns limited number of topics (up to <i>pageSize</i>) and a new <i>pageToken</i> which allows to obtain the next page of data. If <i>false</i>, the operation returns the entire list of topics. <br> Default: <i>false</i> </td>
+            </tr>
+            <tr>
+              <td> <i> pageSize </i> </td>
+              <td> Integer </td>
+              <td> maximum number of topics to return. If <i>paginate</i> option value is <i>false</i>, this option is ignored. <br>  Default: 20 </td>
+            </tr>
+            <tr>
+              <td> <i> pageToken </i> </td>
+              <td> String </td>
+              <td> page token returned by the previous paginated <i>GooglePubSub.Topics.list()</i> call; indicates that the library should return the next page of data. If <i>paginate</i> option value is <i>false</i>, this option is ignored. If <i>paginate</i> option value is <i>true</i> and <i>pageToken</i> option is not specified, the library starts listing from the beginning. </td>
+            </tr>
+          </tbody>
+        </table>
+      </td>
+    </tr>
+    <tr>
+      <td> <i> callback </i> </td>
+      <td> Function (optional) </td>
+      <td>
+         callback function to be executed once the operation is completed. The callback function signature: <b>callback(error, topicNames, nextOptions = null)</b>, where:
+        <table>
+          <thead>
+            <tr>
+              <th>Name</th>
+              <th>Type</th>
+              <th>Description</th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr>
+              <td> <i> error </i> </td>
+              <td> GooglePubSub.Error </td>
+              <td> error details, <i>null</i> if the operation succeeds </td>
+            </tr>
+            <tr>
+              <td> <i> topicNames </i> </td>
+              <td> Array of Strings </td>
+              <td> names of the topics </td>
+            </tr>
+            <tr>
+              <td> <i> nextOptions </i> </td>
+              <td> Table of key-value Strings (optional) </td>
+              <td>
+                value of the <i>options</i> table that can be directly used as an argument for subsequent paginated <i>GooglePubSub.Topics.list()</i> call; it contains <i>pageToken</i> returned by the currently executed <i>GooglePubSub.Topics.list()</i> call. <i>nextOptions</i> is null in one of the following cases:
+                <ul>
+                  <li> no more results are available </li>
+                  <li> <i>paginate</i> option value was <i>false</i> </li>
+                  <li> the operation fails </li>
+                </ul>
+              </td>
+            </tr>
+          </tbody>
+        </table>
+      </td>
+    </tr>
+  </tbody>
+</table>
+
+Returns nothing. A result of the operation may be obtained via the callback function.
+
 #### *GooglePubSub.Topics.iam()*
 
 Returns an instance of *GooglePubSub.IAM* class that can be used for execution of Identity and Access Management methods for topics.
