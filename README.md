@@ -707,13 +707,108 @@ Public fields:
 
 ### Constructor *GooglePubSub.PushConfig(pushEndpoint, attributes = null)*
 
-Creates a push subscription configuration.
-
 Parameters:
 - *pushEndpoint* - *string* - push endpoint URL (URL of a endpoint that messages should be pushed to)
 - *attributes* - *table* of key-value *strings* - optional - [push endpoint attributes](https://cloud.google.com/pubsub/docs/reference/rest/v1/projects.subscriptions#PushConfig)
 
 Returns:
 - *GooglePubSub.PushConfig* instance that can be passed into *GooglePubSub.Subscriptions.obtain()* method to create the push subscription.
+
+## Class *GooglePubSub.Subscriptions*
+
+Provides access to Google Pub/Sub Subscriptions manipulation methods.
+
+### Constructor *GooglePubSub.Subscriptions(projectId, oAuthTokenProvider)*
+
+Parameters:
+- *projectId* - *string* - Google Cloud Project ID
+- *oAuthTokenProvider* - *object* - provider of access tokens suitable for Google Pub/Sub service requests authentication, [see here](#access-token-provider)
+
+Returns:
+- *GooglePubSub.Subscriptions* instance
+
+### *GooglePubSub.Subscriptions.obtain(subscrName, options = null, callback = null)*
+
+Obtains (get or create) the specified subscription.
+
+If subscription with the specified name exists, the method retrieves it's configuration. 
+
+If subscription with the specified name does not exist and *autoCreate* option is *true*, the subscription is created. In this case *subscrConfig* option must be specified.
+
+If the subscription does not exist and *autoCreat*e option is *false*, the method fails with *PUB_SUB_ERROR.PUB_SUB_REQUEST_FAILED* error (with *httpStatus* 404).
+
+Parameters:
+- *subscrName* - *string* - name of the subscription
+- *options* - *table* of key-value *strings* - optional - method options. The valid keys are:
+  - *autoCreate* - *boolean* - create the subscription if it does not exist. Default: *false*
+  - *subscrConfig* - *GooglePubSub.SubscriptionConfig* - optional - configuration of the subscription to be created. If *autoCreate* option is *true*, *subscrConfig* option must be specified. Otherwise, *subscrConfig* option is ignored.
+- *callback* - *function* - optional - callback function to be executed once the operation is completed
+
+Returns nothing. A result of the operation may be obtained via the callback function.
+
+The callback function signature: **callback(error, subscrConfig)**, where:
+- *error* - *GooglePubSub.Error* - error details, *null* if the operation succeeds
+- *subscrConfig* - *GooglePubSub.SubscriptionConfig* - configuration of the obtained subscription
+
+### *GooglePubSub.Subscriptions.modifyPushConfig(subscrName, pushConfig, callback = null)*
+
+Modifies push configuration for the specified subscription.
+The method may be used to change a push subscription to a pull one or vice versa, or change push endpoint URL and other attributes of a push subscription.
+
+To modify a push subscription to a pull one, pass *nul*l or empty table as *pushConfig* parameter value.
+
+Parameters:
+- *subscrName* - *string* - name of the subscription
+- *pushConfig* - *GooglePubSub.PushConfig* - new push configuration for future deliveries. *null* or empty *pushConfig* indicates that the Pub/Sub service should stop pushing messages from the given subscription and allow messages to be pulled and acknowledged.
+- *callback* - *function* - optional - callback function to be executed once the operation is completed
+
+Returns nothing. A result of the operation may be obtained via the callback function.
+
+The callback function signature: **callback(error)**, where:
+- *error* - *GooglePubSub.Error* - error details, *null* if the operation succeeds
+
+### *GooglePubSub.Subscriptions.remove(subscrName, callback = null)*
+
+Deletes the specified subscription, if it exists.
+Otherwise - fails with *PUB_SUB_ERROR.PUB_SUB_REQUEST_FAILED* error (with *httpStatus* 404).
+
+All messages retained in the subscription are immediately dropped and cannot be delivered neither by pull, nor by push ways.
+
+After the subscription is deleted, a new one may be created with the same name; but the new one has no association with the old subscription or its topic unless the same topic is specified for the new subscription.
+
+Parameters:
+- *subscrName* - *string* - name of the subscription
+- *callback* - *function* - optional - callback function to be executed once the operation is completed
+
+Returns nothing. A result of the operation may be obtained via the callback function.
+
+The callback function signature: **callback(error)**, where:
+- *error* - *GooglePubSub.Error* - error details, *null* if the operation succeeds
+
+### *GooglePubSub.Subscriptions.list(options = null, callback = null)*
+
+Gets a list of the subscriptions (names of all subscriptions) registered to the project or related to the specified topic.
+
+Parameters:
+- *options* - *table* of key-value *strings* - optional - method options. The valid keys are:
+  - *topicName* - *string* - name of the topic to list subscriptions from. If specified, the method lists the subscriptions related to this topic. If not specified, the method lists all subscriptions registered to the project.
+  - *paginate* - *boolean* - if *true*, the operation returns limited number of subscriptions (up to *pageSize*) and a new *pageToken* which allows to obtain the next page of data. If *false*, the operation returns the entire list of subscriptions. Default: *false*
+  - *pageSize* - *integer* - maximum number of subscriptions to return. If *paginate* option value is *false*, this option is ignored. Default: 20
+  - *pageToken* - *string* - page token returned by the previous paginated *GooglePubSub.Subscriptions.list()* call; indicates that the library should return the next page of data. If *paginate* option value is *false*, this option is ignored. If *paginate* option value is *true* and *pageToken* option is not specified, the library starts listing from the beginning.
+- *callback* - *function* - optional - callback function to be executed once the operation is completed
+
+Returns nothing. A result of the operation may be obtained via the callback function.
+
+The callback function signature: **callback(error, subscrNames, nextOptions = null)**, where:
+- *error* - *GooglePubSub.Error* - error details, *null* if the operation succeeds
+- *subscrNames* - *array* of *strings* - names of the subscriptions
+- *nextOptions* - *table* of key-value *strings* - value of the *options* table that can be directly used as an argument for subsequent paginated *GooglePubSub.Subscriptions.list()* call; it contains *pageToken* returned by the currently executed *GooglePubSub.Subscriptions.list()* call. *nextOptions* is null in one of the following cases:
+  - no more results are available
+  - *paginate* option value was *false*
+  - the operation fails
+
+### *GooglePubSub.Subscriptions.iam()*
+
+Returns an instance of *GooglePubSub.IAM* class that can be used for execution of Identity and Access Management methods for subscriptions.
 
 
