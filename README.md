@@ -522,11 +522,11 @@ Working examples are provided in [Examples](./Examples) folder and described [he
 
 The Google-PubSub library is licensed under the [MIT License](./LICENSE)
 
-## Google PubSub Library API Details
+# Google PubSub Library API Details
 
-### Class *GooglePubSub*
+## Class *GooglePubSub*
 
-#### *GooglePubSub.setDebug(value)*
+### *GooglePubSub.setDebug(value)*
 
 Enables/disables the library debug output (including errors logging). Disabled by default.
 
@@ -535,7 +535,7 @@ Parameters:
 
 Returns nothing.
 
-### Class *GooglePubSub.Error*
+## Class *GooglePubSub.Error*
 
 Represents an error returned by the library.
 
@@ -548,7 +548,7 @@ Public fields:
 - *httpStatus* - *integer* - HTTP status code, *null* if *type* is *PUB_SUB_ERROR.LIBRARY_ERROR*
 - *httpResponse* - *table* of key-value *strings* - response body of the failed request, *null* if *type* is *PUB_SUB_ERROR.LIBRARY_ERROR*
 
-### Class *GooglePubSub.Message*
+## Class *GooglePubSub.Message*
 
 Represents Google Pub/Sub Message: a combination of any format data and optional attributes that a publisher sends to a topic and subscriber(s) receive.
 
@@ -559,7 +559,7 @@ Public fields:
 - *attributes* - *table* of key-value *strings* - optional attributes of the message
 - *publishTime* - *string* - the time when the message was published to the Google Cloud Pub/Sub service. Format is RFC3339 UTC "Zulu", accurate to nanoseconds, e.g. "2014-10-02T15:01:23.045123456Z"
 
-#### Constructor *GooglePubSub.Message(data = null, attributes = null)*
+### Constructor *GooglePubSub.Message(data = null, attributes = null)*
 
 Creates a message that can be used for message publishing.
 The message must contain either a non-empty data field, or at least one attribute. Otherwise *GooglePubSub.Publisher.publish()* method will fail with *PUB_SUB_ERROR.LIBRARY_ERROR* error.
@@ -571,11 +571,11 @@ Parameters:
 Returns:
 - *GooglePubSub.Message* instance that can be sent to Google Pub/Sub service using *GooglePubSub.Publisher.publish()* method.
 
-### Class *GooglePubSub.Topics*
+## Class *GooglePubSub.Topics*
 
 Provides access to Google Pub/Sub Topics manipulation methods.
 
-#### Constructor *GooglePubSub.Topics(projectId, oAuthTokenProvider)*
+### Constructor *GooglePubSub.Topics(projectId, oAuthTokenProvider)*
 
 Parameters:
 - *projectId* - *string* - Google Cloud Project ID
@@ -584,7 +584,7 @@ Parameters:
 Returns:
 - *GooglePubSub.Topics* instance
 
-#### *GooglePubSub.Topics.obtain(topicName, options = null, callback = null)*
+### *GooglePubSub.Topics.obtain(topicName, options = null, callback = null)*
 
 Checks if the specified topic exists and optionally creates it if not.
 If the topic does not exist and *autoCreate* option is *true*, the topic is created.
@@ -601,7 +601,7 @@ Returns nothing. A result of the operation may be obtained via the callback func
 The callback function signature: **callback(error)**, where:
 - *error* - *GooglePubSub.Error* - error details, *null* if the operation succeeds
 
-#### *GooglePubSub.Topics.remove(topicName, callback = null)*
+### *GooglePubSub.Topics.remove(topicName, callback = null)*
 
 Deletes the specified topic, if it exists.
 Otherwise - fails with *PUB_SUB_ERROR.PUB_SUB_REQUEST_FAILED* error (with *httpStatus* 404).
@@ -619,7 +619,7 @@ Returns nothing. A result of the operation may be obtained via the callback func
 The callback function signature: **callback(error)**, where:
 - *error* - *GooglePubSub.Error* - error details, *null* if the operation succeeds
 
-#### *GooglePubSub.Topics.list(options = null, callback = null)*
+### *GooglePubSub.Topics.list(options = null, callback = null)*
 
 Get a list of the topics (names of all topics) registered to the project.
 
@@ -640,15 +640,15 @@ The callback function signature: **callback(error, topicNames, nextOptions = nul
   - *paginate* option value was *false*
   - the operation fails
 
-#### *GooglePubSub.Topics.iam()*
+### *GooglePubSub.Topics.iam()*
 
 Returns an instance of *GooglePubSub.IAM* class that can be used for execution of Identity and Access Management methods for topics.
 
-### Class *GooglePubSub.Publisher*
+## Class *GooglePubSub.Publisher*
 
 Allows to publish messages to a specific topic of Google Cloud Pub/Sub service.
 
-#### Constructor *GooglePubSub.Publisher(projectId, oAuthTokenProvider, topicName)*
+### Constructor *GooglePubSub.Publisher(projectId, oAuthTokenProvider, topicName)*
 
 Parameters:
 - *projectId* - *string* - Google Cloud Project ID
@@ -658,7 +658,7 @@ Parameters:
 Returns:
 - *GooglePubSub.Publisher* instance
 
-#### *GooglePubSub.Publisher.publish(message, callback = null)*
+### *GooglePubSub.Publisher.publish(message, callback = null)*
 
 Publishes the provided message or array of messages to the topic.
 
