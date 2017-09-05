@@ -676,6 +676,44 @@ The callback function signature: **callback(error, messageIds)**, where:
 - *error* - *GooglePubSub.Error* - error details, *null* if the operation succeeds
 - *messageIds* - *array* of *strings* - Google Pub/Sub service assigned ID of each published message, in the same order as the messages in the request. IDs are guaranteed to be unique within the topic.
 
+## Class *GooglePubSub.SubscriptionConfig*
 
+Represents configuration of a Google Pub/Sub Subscription.
+
+Public fields:
+- *topicName* - *string* - name of the Google Pub/Sub topic from which this subscription receives messages
+- *ackDeadlineSeconds* - *integer* - the maximum time (in seconds) after receiving a message when the message must be acknowledged before it is redelivered by Pub/Sub service
+- *pushConfig* - *GooglePubSub.PushConfig* - additional configuration for push subscription; *null* for pull subscription
+
+### Constructor *GooglePubSub.SubscriptionConfig(topicName, ackDeadlineSeconds, pushConfig = null)*
+
+Creates a subscription configuration that can be used for the subscription creation in Google Pub/Sub service.
+
+Parameters:
+- *topicName* - *string* - name of the Google Pub/Sub topic from which this subscription receives messages
+- *ackDeadlineSeconds* - *integer* - optional - the maximum time (in seconds) after receiving a message when the message must be acknowledged before it is redelivered by Pub/Sub service. Default : 10 seconds
+- *pushConfig* - *GooglePubSub.PushConfig* - optional - additional configuration for push subscription. Default: *null* (pull subscription)
+
+Returns:
+- *GooglePubSub.SubscriptionConfig* instance that can be passed into *GooglePubSub.Subscriptions.obtain()* method to create the subscription.
+
+## Class *GooglePubSub.PushConfig*
+
+Represents additional configuration of a push subscription.
+
+Public fields:
+- *pushEndpoint* - *string* - push endpoint URL (URL of a endpoint that messages should be pushed to)
+- *attributes* - *table* of key-value *strings* - [push endpoint attributes](https://cloud.google.com/pubsub/docs/reference/rest/v1/projects.subscriptions#PushConfig). May be *null*
+
+### Constructor *GooglePubSub.PushConfig(pushEndpoint, attributes = null)*
+
+Creates a push subscription configuration.
+
+Parameters:
+- *pushEndpoint* - *string* - push endpoint URL (URL of a endpoint that messages should be pushed to)
+- *attributes* - *table* of key-value *strings* - optional - [push endpoint attributes](https://cloud.google.com/pubsub/docs/reference/rest/v1/projects.subscriptions#PushConfig)
+
+Returns:
+- *GooglePubSub.PushConfig* instance that can be passed into *GooglePubSub.Subscriptions.obtain()* method to create the push subscription.
 
 
