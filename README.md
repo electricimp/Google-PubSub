@@ -33,7 +33,7 @@ An example of how to create and configure a Google Cloud project see [here](./Ex
 
 ## Library Usage
 
-The library API is described in details in the source file, [here](./GooglePubSub.agent.lib.nut).
+The library API is described in details [here](#google-pubsub-library-api-details).
 
 ### Main Components
 
@@ -112,7 +112,7 @@ publisher <- GooglePubSub.Publisher(PROJECT_ID, oAuthTokenProvider, TOPIC_NAME);
 
 All requests that are made to Google Cloud Pub/Sub service are asynchronous. Every method that sends a request can take an optional callback parameter, a function which will be called when the operation is completed, successfully or not. Details of every callback are described in the corresponding methods.
 
-Every callback has at least one parameter - *error* - an instance of *GooglePubSub.Error* class. If *error* is `null` the operation has been executed successfully. Otherwise, *error* contains the details of the occurred error:
+Every callback has at least one parameter - *error* - an instance of [*GooglePubSub.Error* class](#class-googlepubsub.error). If *error* is `null` the operation has been executed successfully. Otherwise, *error* contains the details of the occurred error:
 
 - *type* - error type
 - *details* - human readable details of the error
@@ -1041,9 +1041,7 @@ If the resource does not exist, this operation returns an empty set of permissio
 
 Parameters:
 - *resourceName* - *string* - name of the topic or subscription
-- *permissions* - *string* or *array* of *strings* - the permission(s) to test for the resource.
-    Permissions with wildcards such as * or pubsub.topics.* are not allowed.
-For a list of the available permissions see [Google Cloud Pub/Sub Access Control documentation](https://cloud.google.com/pubsub/docs/access_control)
+- *permissions* - *string* or *array* of *strings* - the permission(s) to test for the resource. Permissions with wildcards such as \* or pubsub.topics.\* are not allowed. For a list of the available permissions see [Google Cloud Pub/Sub Access Control documentation](https://cloud.google.com/pubsub/docs/access_control)
 - *callback* - *function* - optional - callback function to be executed once the operation is completed
 
 Returns nothing. A result of the operation may be obtained via the callback function.
