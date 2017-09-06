@@ -820,7 +820,7 @@ Composes an endpoint URL based on the URL of the IMP agent where the library is 
 The result URL can be used to create a push subscription and receive messages from this subscription using *GooglePubSub.PushSubscriber* class.
 
 Parameters:
-- *relativePath* - *string* - optional - relative path which to be added to the IMP agent URL. If specified, the composed URL to be <IMP agent URL>/<relativePath>
+- *relativePath* - *string* - optional - relative path which to be added to the IMP agent URL
 - *secretToken* - *string* - optional - secret token specified by a user. It allows to verify that the messages pushed to the push endpoint are originated from the Google Cloud Pub/Sub service. More information see [here](https://cloud.google.com/pubsub/docs/faq#security)
 
 Returns:
