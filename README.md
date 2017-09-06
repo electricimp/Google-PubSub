@@ -522,125 +522,11 @@ Working examples are provided in [Examples](./Examples) folder and described [he
 
 The Google-PubSub library is licensed under the [MIT License](./LICENSE)
 
-## Google PubSub Library API Details
+# Google PubSub Library API Details
 
-### Class *GooglePubSub*
+## Class *GooglePubSub.Topics*
 
-#### *GooglePubSub.setDebug(value)*
-
-Enables/disables the library debug output (including errors logging). Disabled by default.
-
-Parameters:
-- *value* - *boolean* - *true* to enable / *false* to disable debug output
-
-Returns nothing.
-
-### Class *GooglePubSub.Error*
-
-Represents an error returned by the library.
-
-Public fields:
-- *type* - *PUB_SUB_ERROR* - error type, one of the *PUB_SUB_ERROR* enum values:
-  - *PUB_SUB_ERROR.LIBRARY_ERROR* - the library is wrongly initialized, or a method is called with invalid argument(s), or an internal error. The error details can be found in the *details* field.
-  - *PUB_SUB_ERROR.PUB_SUB_REQUEST_FAILED* - HTTP request to Google Cloud Pub/Sub service fails. The error details can be found in the *details*, *httpStatus* and *httpResponse* fields.
-  - *PUB_SUB_ERROR.PUB_SUB_UNEXPECTED_RESPONSE* - unexpected response from Google Pub/Sub service. The error details can be found in the *details* and *httpResponse* fields.
-- *details* - *string* - error details
-- *httpStatus* - *integer* - HTTP status code, *null* if *type* is *PUB_SUB_ERROR.LIBRARY_ERROR*
-- *httpResponse* - *table* of key-value *strings* - response body of the failed request, *null* if *type* is *PUB_SUB_ERROR.LIBRARY_ERROR*
-
-### Class *GooglePubSub.Message*
-
-Represents Google Pub/Sub Message: a combination of any format data and optional attributes that a publisher sends to a topic and subscriber(s) receive.
-
-Public fields:
-- *id* - *string* - ID of the message
-- *ackId* - *string* - ID used to acknowledge the message receiving
-- *data* - any type - the message data
-- *attributes* - *table* of key-value *strings* - optional attributes of the message
-- *publishTime* - *string* - the time when the message was published to the Google Cloud Pub/Sub service. Format is RFC3339 UTC "Zulu", accurate to nanoseconds, e.g. "2014-10-02T15:01:23.045123456Z"
-
-#### Constructor *GooglePubSub.Message(data = null, attributes = null)*
-
-Creates a message that can be used for message publishing.
-The message must contain either a non-empty data field, or at least one attribute. Otherwise *GooglePubSub.Publisher.publish()* method will fail with *PUB_SUB_ERROR.LIBRARY_ERROR* error.
-
-Parameters:
-- *data* - any type - optional - the message data
-- *attributes* - *table* of key-value *strings* - optional - the message attributes
-
-Returns:
-- *GooglePubSub.Message* instance that can be sent to Google Pub/Sub service using *GooglePubSub.Publisher.publish()* method.
-
-### Class *GooglePubSub.Topics*
-
-Provides access to Google Pub/Sub Topics manipulation methods.
-
-#### Constructor *GooglePubSub.Topics(projectId, oAuthTokenProvider)*
-
-Parameters:
-- *projectId* - *string* - Google Cloud Project ID
-- *oAuthTokenProvider* - *object* - provider of access tokens suitable for Google Pub/Sub service requests authentication, [see here](#access-token-provider)
-
-Returns:
-- *GooglePubSub.Topics* instance
-
-#### *GooglePubSub.Topics.obtain(topicName, options = null, callback = null)*
-
-Checks if the specified topic exists and optionally creates it if not.
-If the topic does not exist and *autoCreate* option is *true*, the topic is created.
-If the topic does not exist and *autoCreate* option is *false*, the method fails with *PUB_SUB_ERROR.PUB_SUB_REQUEST_FAILED* error (with *httpStatus* 404).
-
-Parameters:
-- *topicName* - *string* - name of the topic.
-- *options* - *table* of key-value *strings* - optional - method options. The valid keys are:
-  - *autoCreate* - *boolean* - create the topic if it does not exist. Default: *false*
-- *callback* - *function* - optional - callback function to be executed once the operation is completed
-
-Returns nothing. A result of the operation may be obtained via the callback function.
-
-The callback function signature: **callback(error)**, where:
-- *error* - *GooglePubSub.Error* - error details, *null* if the operation succeeds
-
-#### *GooglePubSub.Topics.remove(topicName, callback = null)*
-
-Deletes the specified topic, if it exists.
-Otherwise - fails with *PUB_SUB_ERROR.PUB_SUB_REQUEST_FAILED* error (with *httpStatus* 404).
-
-Existing subscriptions related to the deleted topic are not destroyed.
-
-After the topic is deleted, a new topic may be created with the same name; this will be an entirely new topic with none of the old configuration or subscriptions.
-
-Parameters:
-- *topicName* - *string* - name of the topic.
-- *callback* - *function* - optional - callback function to be executed once the operation is completed
-
-Returns nothing. A result of the operation may be obtained via the callback function.
-
-The callback function signature: **callback(error)**, where:
-- *error* - *GooglePubSub.Error* - error details, *null* if the operation succeeds
-
-#### *GooglePubSub.Topics.list(options = null, callback = null)*
-
-Get a list of the topics (names of all topics) registered to the project.
-
-Parameters:
-- *options* - *table* of key-value *strings* - optional - method options. The valid keys are:
-  - *paginate* - *boolean* - if *true*, the operation returns limited number of topics (up to *pageSize*) and a new *pageToken* which allows to obtain the next page of data. If *false*, the operation returns the entire list of topics. Default: *false*
-  - *pageSize* - *integer* - maximum number of topics to return. If *paginate* option value is *false*, this option is ignored. Default: 20
-  - *pageToken* - *string* - page token returned by the previous paginated *GooglePubSub.Topics.list()* call; indicates that the library should return the next page of data. If *paginate* option value is *false*, this option is ignored. If *paginate* option value is *true* and *pageToken* option is not specified, the library starts listing from the beginning.
-- *callback* - *function* - optional - callback function to be executed once the operation is completed
-
-Returns nothing. A result of the operation may be obtained via the callback function.
-
-The callback function signature: **callback(error, topicNames, nextOptions = null)**, where:
-- *error* - *GooglePubSub.Error* - error details, *null* if the operation succeeds
-- *topicNames* - *array* of *strings* - names of the topics
-- *nextOptions* - *table* of key-value *strings* - value of the *options* table that can be directly used as an argument for subsequent paginated *GooglePubSub.Topics.list()* call; it contains *pageToken* returned by the currently executed *GooglePubSub.Topics.list()* call. *nextOptions* is null in one of the following cases:
-  - no more results are available
-  - *paginate* option value was *false*
-  - the operation fails
-
-#### *GooglePubSub.Topics.list(options = null, callback = null)*
+### *GooglePubSub.Topics.list(options = null, callback = null)*
 
 Get a list of the topics (names of all topics) registered to the project.
 
@@ -731,9 +617,5 @@ Parameters:
 </table>
 
 Returns nothing. A result of the operation may be obtained via the callback function.
-
-#### *GooglePubSub.Topics.iam()*
-
-Returns an instance of *GooglePubSub.IAM* class that can be used for execution of Identity and Access Management methods for topics.
 
 
