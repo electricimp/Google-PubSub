@@ -945,6 +945,38 @@ Returns nothing. A result of the operation may be obtained via the callback func
 The callback function signature: **callback(error)**, where:
 - *error* - *GooglePubSub.Error* - error details, *null* if the operation succeeds
 
+## Class *GooglePubSub.PushSubscriber*
+
+Allows to receive messages from a push subscription of Google Cloud Pub/Sub service configured with a push endpoint which is based on URL of the IMP agent where the library is running. The messages are automatically acknowledged by the library.
+
+### Constructor *GooglePubSub.PushSubscriber(projectId, oAuthTokenProvider, subscrName)*
+
+Parameters:
+- *projectId* - *string* - Google Cloud Project ID
+- *oAuthTokenProvider* - *object* - provider of access tokens suitable for Google Pub/Sub service requests authentication, [see here](#access-token-provider)
+- *subscrName* - *string* - name of the subscription to receive messages from
+
+Returns:
+- *GooglePubSub.PushSubscriber* instance
+
+### *GooglePubSub.PushSubscriber.setMessagesHandler(messagesHandler, callback = null)*
+
+Checks if the subscription is configured by appropriate push endpoint URL (based on URL of the IMP agent where the library is running) and sets the specified handler function to be executed every time new messages are received from the Google Pub/Sub service.
+
+If the subscription is not configured by an appropriate URL, the operation fails with *PUB_SUB_ERROR.LIBRARY_ERROR* error.
+
+Parameters:
+- *messagesHandler* - *function* - the handler function to be executed when new messages are received
+- *callback* - *function* - optional - callback function to be executed once the operation is completed
+
+The handler function signature: **messagesHandler(error, messages)**, where:
+- *error* - *GooglePubSub.Error* - error details - in case when the received messages have incorrect format then  *PUB_SUB_ERROR.PUB_SUB_UNEXPECTED_RESPONSE* error is reported; *null* if the received messages are correct
+- *messages* - *array* of *GooglePubSub.Message* - messages received
+
+Returns nothing. A result of the operation may be obtained via the callback function.
+
+The callback function signature: **callback(error)**, where:
+- *error* - *GooglePubSub.Error* - error details, *null* if the operation succeeds
 
 
 
