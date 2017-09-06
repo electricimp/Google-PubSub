@@ -112,7 +112,7 @@ publisher <- GooglePubSub.Publisher(PROJECT_ID, oAuthTokenProvider, TOPIC_NAME);
 
 All requests that are made to Google Cloud Pub/Sub service are asynchronous. Every method that sends a request can take an optional callback parameter, a function which will be called when the operation is completed, successfully or not. Details of every callback are described in the corresponding methods.
 
-Every callback has at least one parameter - *error* - an instance of [*GooglePubSub.Error* class](#class-googlepubsub.error). If *error* is `null` the operation has been executed successfully. Otherwise, *error* contains the details of the occurred error:
+Every callback has at least one parameter - *error* - an instance of [*GooglePubSub.Error* class](#class-googlepubsub-error). If *error* is `null` the operation has been executed successfully. Otherwise, *error* contains the details of the occurred error:
 
 - *type* - error type
 - *details* - human readable details of the error
