@@ -522,6 +522,8 @@ Working examples are provided in [Examples](./Examples) folder and described [he
 
 The Google-PubSub library is licensed under the [MIT License](./LICENSE)
 
+
+
 # Google PubSub Library API Details
 
 ## Class *GooglePubSub*
@@ -810,5 +812,140 @@ The callback function signature: **callback(error, subscrNames, nextOptions = nu
 ### *GooglePubSub.Subscriptions.iam()*
 
 Returns an instance of *GooglePubSub.IAM* class that can be used for execution of Identity and Access Management methods for subscriptions.
+
+## Class *GooglePubSub.PullSubscriber*
+
+Allows to receive messages from a pull subscription of Google Cloud Pub/Sub service and acknowledge the received messages. 
+
+### Constructor *GooglePubSub.PullSubscriber(projectId, oAuthTokenProvider, subscrName)*
+
+Parameters:
+- *projectId* - *string* - Google Cloud Project ID
+- *oAuthTokenProvider* - *object* - provider of access tokens suitable for Google Pub/Sub service requests authentication, [see here](#access-token-provider)
+- *subscrName* - *string* - name of the subscription to receive messages from
+
+Returns:
+- *GooglePubSub.PullSubscriber* instance
+
+### *GooglePubSub.PullSubscriber.pull(options = null, callback = null)*
+
+One shot pulling.
+Checks for new messages and calls a callback immediately, with or without the messages.
+
+The new messages (if any) are returned in the callback (not more than *maxMessages*).
+The messages are automatically acknowledged if *autoAck* option is set to *true*.
+The callback is called in any case, even if there are no new messages.
+
+Only one from all pull operations can be active at a time. An attempt to call a new pull operation while another one is active fails with *PUB_SUB_ERROR.LIBRARY_ERROR* error.
+
+Parameters:
+- *options* - *table* of key-value *strings* - optional - method options. The valid keys are:
+  - *autoAck* - *boolean* - automatically acknowledge the message once it's pulled. Default: *false*
+  - *maxMessages* - *integer* - the maximum number of messages returned. The Google Pub/Sub service may return fewer than the number specified even if there are more messages available. Default: 20
+- *callback* - *function* - optional - callback function to be executed once the operation is completed
+
+Returns nothing. A result of the operation may be obtained via the callback function.
+
+The callback function signature: **callback(error, messages)**, where:
+- *error* - *GooglePubSub.Error* - error details, *null* if the operation succeeds
+- *messages* - *array* of *GooglePubSub.Message* - messages returned
+
+### *GooglePubSub.PullSubscriber.periodicPull(period, options = null, callback = null)*
+
+Periodic pulling.
+Periodically checks for new messages and calls a callback if new messages are available at a time of a check.
+
+The new messages are returned in the callback (not more than *maxMessages*).
+The messages are automatically acknowledged if *autoAck* option is set to *true*.
+The callback is not called when there are no new messages at a time of a check.
+
+Only one from all pull operations can be active at a time. An attempt to call a new pull operation while another one is active fails with *PUB_SUB_ERROR.LIBRARY_ERROR* error.
+
+Parameters:
+- *period* - *float* - period of checks, in seconds, must be positive float value. The specified period should not be too small, otherwise a number of http requests per second will exceed Electric Imp maximum rate limit and further requests will fail with *PUB_SUB_ERROR.PUB_SUB_REQUEST_FAILED* error. More information about http requests rate limiting is [here](https://electricimp.com/docs/api/httprequest/)
+- *options* - *table* of key-value *strings* - optional - method options. The valid keys are:
+  - *autoAck* - *boolean* - automatically acknowledge the message once it's pulled. Default: *false*
+  - *maxMessages* - *integer* - the maximum number of messages returned. The Google Pub/Sub service may return fewer than the number specified even if there are more messages available. Default: 20
+- *callback* - *function* - optional - callback function to be executed once the operation is completed
+
+Returns nothing. A result of the operation may be obtained via the callback function.
+
+The callback function signature: **callback(error, messages)**, where:
+- *error* - *GooglePubSub.Error* - error details, *null* if the operation succeeds
+- *messages* - *array* of *GooglePubSub.Message* - messages returned
+
+### *GooglePubSub.PullSubscriber.pendingPull(options = null, callback = null)*
+
+Pending (waiting) pulling.
+Waits for new messages and calls a callback when new messages appear.
+
+The new messages are returned in the callback (not more than *maxMessages*).
+The messages are automatically acknowledged if *autoAck* option is set to *true*.
+The callback is called only when new messages are available (or in case of an error).
+
+Only one from all pull operations can be active at a time. An attempt to call a new pull operation while another one is active fails with *PUB_SUB_ERROR.LIBRARY_ERROR* error.
+
+Parameters:
+- *options* - *table* of key-value *strings* - optional - method options. The valid keys are:
+  - *repeat* - *boolean* - if *true*, a new *GooglePubSub.PullSubscriber.pendingPull()* method with the same parameters is automatically called by the library after the callback is executed. Default: *false*
+  - *autoAck* - *boolean* - automatically acknowledge the message once it's pulled. Default: *false*
+  - *maxMessages* - *integer* - the maximum number of messages returned. The Google Pub/Sub service may return fewer than the number specified even if there are more messages available. Default: 20
+- *callback* - *function* - optional - callback function to be executed once the operation is completed
+
+Returns nothing. A result of the operation may be obtained via the callback function.
+
+The callback function signature: **callback(error, messages)**, where:
+- *error* - *GooglePubSub.Error* - error details, *null* if the operation succeeds
+- *messages* - *array* of *GooglePubSub.Message* - messages returned
+
+### *GooglePubSub.PullSubscriber.stopPull()*
+
+Stops periodic or pending pull operation if it was started by *GooglePubSub.PullSubscriber.periodicPull()* or *GooglePubSub.PullSubscriber.pendingPull()* methods earlier.
+Does nothing if no periodic or pending pull operation is active at this moment.
+
+Returns nothing.
+
+### *GooglePubSub.PullSubscriber.ack(message, callback = null)*
+
+Acknowledges to the Google Pub/Sub service that the message(s) has been received.
+
+Acknowledging a message whose ack deadline has expired may succeed, but such a message may be redelivered by the Google Pub/Sub service later. 
+Acknowledging a message more than once will not result in an error.
+
+Parameters:
+- *message* - different types - the message(s) to be acknowledged. It can be:
+  - *string* - acknowledgment ID of the received message
+  - *array* of *strings* - array of the acknowledgment IDs
+  - *GooglePubSub.Message* - the received *GooglePubSub.Message* instance
+  - *array* of *GooglePubSub.Message* - array of the received *GooglePubSub.Message* instances
+- *callback* - *function* - optional - callback function to be executed once the operation is completed
+
+Returns nothing. A result of the operation may be obtained via the callback function.
+
+The callback function signature: **callback(error)**, where:
+- *error* - *GooglePubSub.Error* - error details, *null* if the operation succeeds
+
+### *GooglePubSub.PullSubscriber.modifyAckDeadline(message, ackDeadlineSeconds, callback = null)*
+
+Modifies the ack deadline for a specific message(s).
+
+This method is useful to indicate that more time is needed to process a message by the subscriber, or to make the message available for redelivery if the processing was interrupted.
+
+Parameters:
+- *message* - different types - the message(s) whose ack deadline to be modified. It can be:
+  - *string* - acknowledgment ID of the received message
+  - *array* of *strings* - array of the acknowledgment IDs
+  - *GooglePubSub.Message* - the received *GooglePubSub.Message* instance
+  - *array* of *GooglePubSub.Message* - array of the received *GooglePubSub.Message* instances
+- *ackDeadlineSeconds* - *integer* - the new ack deadline, in seconds
+- *callback* - *function* - optional - callback function to be executed once the operation is completed
+
+Returns nothing. A result of the operation may be obtained via the callback function.
+
+The callback function signature: **callback(error)**, where:
+- *error* - *GooglePubSub.Error* - error details, *null* if the operation succeeds
+
+
+
 
 
