@@ -978,6 +978,79 @@ Returns nothing. A result of the operation may be obtained via the callback func
 The callback function signature: **callback(error)**, where:
 - *error* - *GooglePubSub.Error* - error details, *null* if the operation succeeds
 
+## Class *GooglePubSub.IAM.Policy*
+
+Represents Google Identity and Access Management (IAM) policy.
+
+Public fields:
+- *version* - *integer* - version of the policy
+- *bindings* - *array* of *tables* { "role" : *string*, "members" : *array* of *strings* } - array of bindings. Every binding binds a list of members to a role, where the "members" can be user accounts, Google groups, Google domains, service accounts; the "role" is a named set of permissions defined by IAM. For a list of the supported roles see [Google Cloud Pub/Sub Access Control documentation](https://cloud.google.com/pubsub/docs/access_control).
+- *etag* - *string* - entity tag. See [here](https://cloud.google.com/pubsub/docs/reference/rest/v1/Policy).
+
+### Constructor *GooglePubSub.IAM.Policy(version = 0, bindings = null, etag = null)*
+
+Parameters:
+- *version* - *integer* - optional - version of the policy. Default: 0
+- *bindings* - *array* of *tables* { "role" : *string*, "members" : *array* of *strings* } - optional - array of bindings (see the description of *bindings* public field)
+- *etag* - *string* - optional - entity tag. See [here](https://cloud.google.com/pubsub/docs/reference/rest/v1/Policy).
+
+Returns:
+- *GooglePubSub.IAM.Policy* instance that can be passed as an argument to *GooglePubSub.IAM.setPolicy()* method to set a resource policy.
+
+## Class *GooglePubSub.IAM*
+
+Provides Google Identity and Access Management (IAM) functionality for individual Google Pub/Sub resources (topics and subscriptions).
+
+IAM and its features are described in details in the [Google Cloud Identity and Access Management Documentation](https://cloud.google.com/iam/docs/overview)
+
+### *GooglePubSub.IAM.getPolicy(resourceName, callback = null)*
+
+Gets the access control policy for the specified resource (topic or subscription). 
+
+Parameters:
+- *resourceName* - *string* - name of the topic or subscription
+- *callback* - *function* - optional - callback function to be executed once the operation is completed
+
+Returns nothing. A result of the operation may be obtained via the callback function.
+
+The callback function signature: **callback(error, policy)**, where:
+- *error* - *GooglePubSub.Error* - error details, *null* if the operation succeeds
+- *policy* - *GooglePubSub.IAM.Policy* - IAM policy obtained for the resource. Empty if the resource exists but does not have a policy set.
+
+### *GooglePubSub.IAM.setPolicy(resourceName, policy, callback = null)*
+
+Sets the access control policy on the specified resource (topic or subscription).
+Replaces the previous policy, if it existed for the resource.
+
+Parameters:
+- *resourceName* - *string* - name of the topic or subscription
+- *policy* - *GooglePubSub.IAM.Policy* - IAM policy to be set
+- *callback* - *function* - optional - callback function to be executed once the operation is completed
+
+Returns nothing. A result of the operation may be obtained via the callback function.
+
+The callback function signature: **callback(error, policy)**, where:
+- *error* - *GooglePubSub.Error* - error details, *null* if the operation succeeds
+- *policy* - *GooglePubSub.IAM.Policy* - new IAM policy of the resource
+
+### *GooglePubSub.IAM.testPermissions(resourceName, permissions, callback = null)*
+
+Tests the set of permissions for the specified resource (topic or subscription).
+
+If the resource does not exist, this operation returns an empty set of permissions, not *PUB_SUB_ERROR.PUB_SUB_REQUEST_FAILED* error.
+
+Parameters:
+- *resourceName* - *string* - name of the topic or subscription
+- *permissions* - *string* or *array* of *strings* - the permission(s) to test for the resource.
+    Permissions with wildcards such as * or pubsub.topics.* are not allowed.
+For a list of the available permissions see [Google Cloud Pub/Sub Access Control documentation](https://cloud.google.com/pubsub/docs/access_control)
+- *callback* - *function* - optional - callback function to be executed once the operation is completed
+
+Returns nothing. A result of the operation may be obtained via the callback function.
+
+The callback function signature: **callback(error, permissions)**, where:
+- *error* - *GooglePubSub.Error* - error details, *null* if the operation succeeds
+- *permissions* - *array* of *strings* - a subset of the permissions that is allowed for the resource. 
 
 
 
