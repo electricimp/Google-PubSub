@@ -813,6 +813,19 @@ The callback function signature: **callback(error, subscrNames, nextOptions = nu
 
 Returns an instance of *GooglePubSub.IAM* class that can be used for execution of Identity and Access Management methods for subscriptions.
 
+### *GooglePubSub.Subscriptions.getImpAgentEndpoint(relativePath = null, secretToken = null)*
+
+Composes an endpoint URL based on the URL of the IMP agent where the library is running.
+
+The result URL can be used to create a push subscription and receive messages from this subscription using *GooglePubSub.PushSubscriber* class.
+
+Parameters:
+- *relativePath* - *string* - optional - relative path which to be added to the IMP agent URL. If specified, the composed URL to be <IMP agent URL>/<relativePath>
+- *secretToken* - *string* - optional - secret token specified by a user. It allows to verify that the messages pushed to the push endpoint are originated from the Google Cloud Pub/Sub service. More information see [here](https://cloud.google.com/pubsub/docs/faq#security)
+
+Returns:
+- *string* - the result URL
+
 ## Class *GooglePubSub.PullSubscriber*
 
 Allows to receive messages from a pull subscription of Google Cloud Pub/Sub service and acknowledge the received messages. 
@@ -1015,7 +1028,7 @@ Returns nothing. A result of the operation may be obtained via the callback func
 
 The callback function signature: **callback(error, policy)**, where:
 - *error* - *GooglePubSub.Error* - error details, *null* if the operation succeeds
-- *policy* - *GooglePubSub.IAM.Policy* - IAM policy obtained for the resource. Empty if the resource exists but does not have a policy set.
+- *policy* - *GooglePubSub.IAM.Policy* - IAM policy obtained for the resource.
 
 ### *GooglePubSub.IAM.setPolicy(resourceName, policy, callback = null)*
 
