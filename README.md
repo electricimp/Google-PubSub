@@ -15,7 +15,7 @@ Google Cloud Pub/Sub is a publish/subscribe (Pub/Sub) service - a messaging serv
 
 Communication between publishers and subscribers can be one-to-many, many-to-one and many-to-many.
 
-For more information see [Google Cloud Pub/Sub Documentation](https://cloud.google.com/pubsub/docs/overview)
+For more information see [Google Cloud Pub/Sub overview](https://cloud.google.com/pubsub/docs/overview)
 
 Before working with Google Cloud Pub/Sub Service you need to:
 - register Google Cloud Platform account,
@@ -27,7 +27,7 @@ Google Cloud Project is a basic entity of Google Cloud Platform which allows use
 All Pub/Sub Topics and Subscriptions are owned by a specific Project.
 To manage Pub/Sub resources associated with different Projects, you may use different instances of the classes from this library.
 
-For more information see [Google Cloud Project description](https://cloud.google.com/resource-manager/docs/cloud-platform-resource-hierarchy#projects) and [Creating and Managing Projects](https://cloud.google.com/resource-manager/docs/creating-managing-projects)
+For more information see [Google Cloud Project resource description](https://cloud.google.com/resource-manager/docs/cloud-platform-resource-hierarchy#projects) and [Creating and Managing Projects](https://cloud.google.com/resource-manager/docs/creating-managing-projects)
 
 An example of how to create and configure a Google Cloud project see [here](./Examples/README.md#google-cloud-account-configuration).
 
@@ -41,9 +41,9 @@ The library consists of five independent main components (classes). You can inst
 
 - [GooglePubSub.Topics class](#topics-class): provides access to Pub/Sub Topics management methods. One instance of this class is enough to manage all topics of one Project.
 
-- [GooglePubSub.Subscriptions class](#subscriptions-class): provides access to Pub/Sub Subscriptions management methods. One instance of this class is enough to manage all subscriptions of one Project.
-
 - [GooglePubSub.Publisher class](#publisher-class): allows an imp to publish messages to a topic. One instance of this class allows an imp to publish messages to one topic.
+
+- [GooglePubSub.Subscriptions class](#subscriptions-class): provides access to Pub/Sub Subscriptions management methods. One instance of this class is enough to manage all subscriptions of one Project.
 
 - [GooglePubSub.PullSubscriber class](#pullsubscriber-class): allows an imp to receive messages from a pull subscription. One instance of this class allows an imp to receive messages from one pull subscription.
 
@@ -55,7 +55,7 @@ To instantiate any [main component](#main-components) of this library you need t
 
 - [Google Cloud Project ID](#google-cloud-project)
 
-- [Provider of access tokens](#access-tokens-provider) suitable for Google Cloud Pub/Sub service requests authentication.
+- [Provider of access tokens](#access-token-provider) suitable for Google Cloud Pub/Sub service requests authentication.
 
 #### Access Token Provider
 
@@ -468,7 +468,7 @@ For example:
 - Grant access to any operation with particular topic or subscription to a specific user or group of users.
 - Grant access with limited capabilities, such as to only publish messages to a topic, or to only consume messages from a subscription, but not to delete the topic or subscription.
 
-For a detailed description of IAM and its features see [Google Cloud Identity and Access Management Documentation](https://cloud.google.com/iam/docs/overview).
+For a detailed description of IAM and its features see [Google Cloud Identity and Access Management overview](https://cloud.google.com/iam/docs/overview).
 
 *GooglePubSub.IAM* is an auxiliary class that provides IAM functionality for individual Google Cloud Pub/Sub resources (topics and subscriptions).
 It is assumed that this class is not instantiated by a user directly, but *GooglePubSub.Topics.iam()* and *GooglePubSub.Subscriptions.iam()* methods are used to get the instances and execute IAM methods for topics and subscriptions respectively.
@@ -522,7 +522,9 @@ Working examples are provided in [Examples](./Examples) folder and described [he
 
 The Google-PubSub library is licensed under the [MIT License](./LICENSE)
 
-
+--------------------------------------------------------------------------------
+# Appendix
+--------------------------------------------------------------------------------
 
 # Google PubSub Library API Details
 
@@ -1014,7 +1016,7 @@ Returns:
 
 Provides Google Identity and Access Management (IAM) functionality for individual Google Pub/Sub resources (topics and subscriptions).
 
-IAM and its features are described in details in the [Google Cloud Identity and Access Management Documentation](https://cloud.google.com/iam/docs/overview)
+IAM and its features are described in details in the [Google Cloud Identity and Access Management overview](https://cloud.google.com/iam/docs/overview)
 
 ### *GooglePubSub.IAM.getPolicy(resourceName, callback = null)*
 
