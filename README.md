@@ -33,7 +33,7 @@ An example of how to create and configure a Google Cloud project see [here](./Ex
 
 ## Library Usage
 
-The library API is described in details [here](./GooglePubSubAPI).
+The library API is described in details [here](./GooglePubSubAPI.md).
 
 ### Main Components
 
