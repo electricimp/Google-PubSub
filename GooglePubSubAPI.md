@@ -55,7 +55,7 @@ Provides access to Google Pub/Sub Topics manipulation methods.
 
 Parameters:
 - *projectId* - *string* - Google Cloud Project ID
-- *oAuthTokenProvider* - *object* - provider of access tokens suitable for Google Pub/Sub service requests authentication, [see here](#access-token-provider)
+- *oAuthTokenProvider* - *object* - provider of access tokens suitable for Google Pub/Sub service requests authentication, [see here](/README.md#access-token-provider)
 
 Returns:
 - *GooglePubSub.Topics* instance
@@ -128,7 +128,7 @@ Allows to publish messages to a specific topic of Google Cloud Pub/Sub service.
 
 Parameters:
 - *projectId* - *string* - Google Cloud Project ID
-- *oAuthTokenProvider* - *object* - provider of access tokens suitable for Google Pub/Sub service requests authentication, [see here](#access-token-provider)
+- *oAuthTokenProvider* - *object* - provider of access tokens suitable for Google Pub/Sub service requests authentication, [see here](/README.md#access-token-provider)
 - *topicName* - *string* - name of the topic to publish message to
 
 Returns:
@@ -198,7 +198,7 @@ Provides access to Google Pub/Sub Subscriptions manipulation methods.
 
 Parameters:
 - *projectId* - *string* - Google Cloud Project ID
-- *oAuthTokenProvider* - *object* - provider of access tokens suitable for Google Pub/Sub service requests authentication, [see here](#access-token-provider)
+- *oAuthTokenProvider* - *object* - provider of access tokens suitable for Google Pub/Sub service requests authentication, [see here](/README.md#access-token-provider)
 
 Returns:
 - *GooglePubSub.Subscriptions* instance
@@ -308,7 +308,7 @@ Allows to receive messages from a pull subscription of Google Cloud Pub/Sub serv
 
 Parameters:
 - *projectId* - *string* - Google Cloud Project ID
-- *oAuthTokenProvider* - *object* - provider of access tokens suitable for Google Pub/Sub service requests authentication, [see here](#access-token-provider)
+- *oAuthTokenProvider* - *object* - provider of access tokens suitable for Google Pub/Sub service requests authentication, [see here](/README.md#access-token-provider)
 - *subscrName* - *string* - name of the subscription to receive messages from
 
 Returns:
@@ -440,7 +440,7 @@ Allows to receive messages from a push subscription of Google Cloud Pub/Sub serv
 
 Parameters:
 - *projectId* - *string* - Google Cloud Project ID
-- *oAuthTokenProvider* - *object* - provider of access tokens suitable for Google Pub/Sub service requests authentication, [see here](#access-token-provider)
+- *oAuthTokenProvider* - *object* - provider of access tokens suitable for Google Pub/Sub service requests authentication, [see here](/README.md#access-token-provider)
 - *subscrName* - *string* - name of the subscription to receive messages from
 
 Returns:
