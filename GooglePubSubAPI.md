@@ -266,7 +266,7 @@ Only one pull operation can be active at a time. An attempt to call a new pull o
 
 | Parameter | Data Type | Required? | Description |
 | --- | --- | --- | --- |
-| *options* | Table of key-value strings | Optional | The valid keys (options) are:<b>*autoAck* &mdash; A boolean indicating whether messages should be automatically acknowledged once it's pulled. Default: `false`<br>*maxMessages* &mdash; An integer specifying the maximum number of messages to be returned. The Google Pub/Sub service may return fewer than the number specified even if there are more messages available. Default: 20 |
+| *options* | Table of key-value strings | Optional | The valid keys (options) are:<br>*autoAck* &mdash; A boolean indicating whether messages should be automatically acknowledged once it's pulled. Default: `false`<br>*maxMessages* &mdash; An integer specifying the maximum number of messages to be returned. The Google Pub/Sub service may return fewer than the number specified even if there are more messages available. Default: 20 |
 | *callback* | Function | Optional | Executed once the operation is completed |
 
 The method returns nothing. The result of the operation may be obtained via the callback function, which has the following parameters:
@@ -285,7 +285,7 @@ Only one pull operation can be active at a time. An attempt to call a new pull o
 | Parameter | Data Type | Required? | Description |
 | --- | --- | --- | --- |
 | *period* | Float | Yes | The period of checks, in seconds. Must be positive. The specified period should not be too small, otherwise a number of HTTP requests per second will exceed Electric Imp’s maximum rate limit and further requests will fail with a *PUB_SUB_ERROR.PUB_SUB_REQUEST_FAILED* error. More information about HTTP request rate-limiting can be found  [here](https://electricimp.com/docs/api/httprequest/) |
-| *options* | Table of key-value strings | Optional | The valid keys (options) are:<b>*autoAck* &mdash; A boolean indicating whether messages should be automatically acknowledged once it's pulled. Default: `false`<br>*maxMessages* &mdash; An integer specifying the maximum number of messages to be returned. The Google Pub/Sub service may return fewer than the number specified even if there are more messages available. Default: 20 |
+| *options* | Table of key-value strings | Optional | The valid keys (options) are:<br>*autoAck* &mdash; A boolean indicating whether messages should be automatically acknowledged once it's pulled. Default: `false`<br>*maxMessages* &mdash; An integer specifying the maximum number of messages to be returned. The Google Pub/Sub service may return fewer than the number specified even if there are more messages available. Default: 20 |
 | *callback* | Function | Optional | Executed once the operation is completed |
 
 The method returns nothing. The result of the operation may be obtained via the callback function, which has the following parameters:
