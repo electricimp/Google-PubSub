@@ -63,7 +63,7 @@ The method returns nothing. The result of the operation may be obtained via the 
 
 ### remove(*topicName[, callback]*)
 
-Deletes the specified topic, if it exists. If it doesn’t, the operation fails with s *PUB_SUB_ERROR.PUB_SUB_REQUEST_FAILED* error (with *httpStatus* 404).
+Deletes the specified topic, if it exists. If it doesn’t, the operation fails with a *PUB_SUB_ERROR.PUB_SUB_REQUEST_FAILED* error (with *httpStatus* 404).
 
 Existing subscriptions related to the deleted topic are not destroyed.
 
@@ -95,7 +95,7 @@ The method returns nothing. The result of the operation may be obtained via the 
 
 ### iam()
 
-Returns an instance of the GooglePubSub.IAM class that can be used for execution of Identity and Access Management methods for topics.
+Returns an instance of the GooglePubSub.IAM class that can be used to execute Identity and Access Management methods for topics.
 
 ## GooglePubSub.Publisher
 
@@ -105,7 +105,7 @@ Allows your code to publish messages to a specific topic.
 
 | Parameter | Data Type | Required? | Description |
 | --- | --- | --- | --- |
-| *projectId | String | Yes  | The project’s ID |
+| *projectId* | String | Yes  | The project’s ID |
 | *oAuthTokenProvider* | Object | Yes | The provider of access tokens suitable for Google Pub/Sub service requests authentication. See [here](/README.md#access-token-provider) for more information |
 | *topicName* | String | Yes | The name of the topic to publish message to |
 
@@ -143,7 +143,7 @@ Creates a subscription configuration that can be used to crete a new subscriptio
 
 | Parameter | Data Type | Required? | Description |
 | --- | --- | --- | --- |
-| *topicName* | String* | Yes | The name of the topic from which this subscription receives messages |
+| *topicName* | String | Yes | The name of the topic from which this subscription receives messages |
 | *ackDeadlineSeconds* | Integer | Optional | The maximum time (in seconds) after receiving a message when the message must be acknowledged before it is redelivered by the Pub/Sub service. Default: 10 seconds |
 | *pushConfig* | GooglePubSub.PushConfig | Optional | Additional configuration for push subscription. Default: `null` (ie. pull subscription) |
 
@@ -152,7 +152,7 @@ Creates a subscription configuration that can be used to crete a new subscriptio
 Represents the additional configuration details required by a push subscription. It has the following public properties:
 
 - *pushEndpoint* &mdash; A string containing the URL of the endpoint that messages should be pushed to.
-- *attributes* &mdash; A table* of key-value strings holding [push endpoint attributes](https://cloud.google.com/pubsub/docs/reference/rest/v1/projects.subscriptions#PushConfig). May be `null`.
+- *attributes* &mdash; A table of key-value strings holding [push endpoint attributes](https://cloud.google.com/pubsub/docs/reference/rest/v1/projects.subscriptions#PushConfig). May be `null`.
 
 ### Constructor: GooglePubSub.PushConfig(*pushEndpoint, attributes*)
 
@@ -169,7 +169,7 @@ Allows your code to manage subscriptions.
 
 | Parameter | Data Type | Required? | Description |
 | --- | --- | --- | --- |
-| *projectId | String | Yes  | The project’s ID |
+| *projectId* | String | Yes  | The project’s ID |
 | *oAuthTokenProvider* | Object | Yes | The provider of access tokens suitable for Google Pub/Sub service requests authentication. See [here](/README.md#access-token-provider) for more information |
 
 ### obtain(*subscriptionName[, options][, callback]*)
@@ -222,7 +222,7 @@ Gets a list of the names of all subscriptions registered to the project or relat
 
 | Parameter | Data Type | Required? | Description |
 | --- | --- | --- | --- |
-| *options* | Table of key-value *strings | Optional | The valid keys (options) are:<br>*topicName* &mdash; A string with name of the topic to list subscriptions from. If not specified, the method lists all subscriptions registered to the project.<br>*paginate* &mdash; a boolean indicating whether the operation returns a limited number of topics (up to *pageSize*) and a new *pageToken* which allows to obtain the next page of data, or the entire list of topics (`false`). Default: `false`.<br>*pageSize* &mdash; An integer specifying the maximum number of topics to return. If *paginate* is `false`, this option is ignored. Default: 20.<br>*pageToken* &mdash; A string containing the page token returned by the previous paginated *list()* call; indicates that the library should return the next page of data. If *paginate* is `false`, this option is ignored. If *paginate* is `true` and *pageToken* is not specified, the library starts listing from the beginning |
+| *options* | Table of key-value strings | Optional | The valid keys (options) are:<br>*topicName* &mdash; A string with name of the topic to list subscriptions from. If not specified, the method lists all subscriptions registered to the project.<br>*paginate* &mdash; a boolean indicating whether the operation returns a limited number of topics (up to *pageSize*) and a new *pageToken* which allows to obtain the next page of data, or the entire list of topics (`false`). Default: `false`.<br>*pageSize* &mdash; An integer specifying the maximum number of topics to return. If *paginate* is `false`, this option is ignored. Default: 20.<br>*pageToken* &mdash; A string containing the page token returned by the previous paginated *list()* call; indicates that the library should return the next page of data. If *paginate* is `false`, this option is ignored. If *paginate* is `true` and *pageToken* is not specified, the library starts listing from the beginning |
 | *callback* | Function | Optional | Executed once the operation is completed |
 
 The method returns nothing. The result of the operation may be obtained via the callback function, which has the following parameters:
@@ -233,83 +233,67 @@ The method returns nothing. The result of the operation may be obtained via the 
 | *subscrNames* | Array of strings | Yes | The names of the subscriptions |
 | *nextOptions* | Table of key-value strings| Yes | An *options* table that can be directly used as an argument for subsequent paginated *list()* call; it contains the *pageToken* returned by the currently executed *list()* call. *nextOptions* is `null` if no more results are available, *paginate* was `false`, or the operation failed |
 
-### *GooglePubSub.Subscriptions.iam()*
+### *iam()*
 
-Returns an instance of *GooglePubSub.IAM* class that can be used for execution of Identity and Access Management methods for subscriptions.
+Returns an instance of the GooglePubSub.IAM class that can be used to execute Identity and Access Management methods for subscriptions.
 
-### *GooglePubSub.Subscriptions.getImpAgentEndpoint(relativePath = null, secretToken = null)*
+### *getImpAgentEndpoint(*[relativePath][, secretToken]*)
 
-Composes an endpoint URL based on the URL of the IMP agent where the library is running.
+Composes and returns an endpoint URL based on the URL of the agent where the library is running. The resulting URL can be used to create a push subscription and receive messages from this subscription using the GooglePubSub.PushSubscriber class.
 
-The result URL can be used to create a push subscription and receive messages from this subscription using *GooglePubSub.PushSubscriber* class.
+| Parameter | Data Type | Required? | Description |
+| --- | --- | --- | --- |
+| *relativePath* | String | Optional | The relative path which to be added to the agent URL |
+| *secretToken* | String | Optional | A secret token specified by a user. It can be used to verify that the messages pushed to the push endpoint are originated from the Google Cloud Pub/Sub service. More information [here](https://cloud.google.com/pubsub/docs/faq#security) |
 
-Parameters:
-- *relativePath* - *string* - optional - relative path which to be added to the IMP agent URL
-- *secretToken* - *string* - optional - secret token specified by a user. It allows to verify that the messages pushed to the push endpoint are originated from the Google Cloud Pub/Sub service. More information see [here](https://cloud.google.com/pubsub/docs/faq#security)
+## GooglePubSub.PullSubscriber
 
-Returns:
-- *string* - the result URL
+Allows messages to be received from a pull subscription and then acknowledged.
 
-## Class *GooglePubSub.PullSubscriber*
+### Constructor: GooglePubSub.PullSubscriber(*projectId, oAuthTokenProvider, subscriptionName*)
 
-Allows to receive messages from a pull subscription of Google Cloud Pub/Sub service and acknowledge the received messages.
+| Parameter | Data Type | Required? | Description |
+| --- | --- | --- | --- |
+| *projectId* | String | Yes  | The project’s ID |
+| *oAuthTokenProvider* | Object | Yes | The provider of access tokens suitable for Google Pub/Sub service requests authentication. See [here](/README.md#access-token-provider) for more information |
+| *subscriptionName* | String | Yes | The unique name of the subscription |
 
-### Constructor *GooglePubSub.PullSubscriber(projectId, oAuthTokenProvider, subscrName)*
+### pull(*[options][, callback]*)
 
-Parameters:
-- *projectId* - *string* - Google Cloud Project ID
-- *oAuthTokenProvider* - *object* - provider of access tokens suitable for Google Pub/Sub service requests authentication, [see here](/README.md#access-token-provider)
-- *subscrName* - *string* - name of the subscription to receive messages from
+Provides one-shot pulling. Checks for new messages and calls any callback immediately, with or without the messages. The new messages (if any) are returned in the callback (up to *maxMessages* in number). The messages are automatically acknowledged if the *autoAck* option is `true`.
 
-Returns:
-- *GooglePubSub.PullSubscriber* instance
+Only one pull operation can be active at a time. An attempt to call a new pull operation while another one is active fails with a *PUB_SUB_ERROR.LIBRARY_ERROR* error.
 
-### *GooglePubSub.PullSubscriber.pull(options = null, callback = null)*
+| Parameter | Data Type | Required? | Description |
+| --- | --- | --- | --- |
+| *options* | Table of key-value strings | Optional | The valid keys (options) are:<b>*autoAck* &mdash; A boolean indicating whether messages should be automatically acknowledged once it's pulled. Default: `false`<br>*maxMessages* &mdash; An integer specifying the maximum number of messages to be returned. The Google Pub/Sub service may return fewer than the number specified even if there are more messages available. Default: 20 |
+| *callback* | Function | Optional | Executed once the operation is completed |
 
-One shot pulling.
-Checks for new messages and calls a callback immediately, with or without the messages.
+The method returns nothing. The result of the operation may be obtained via the callback function, which has the following parameters:
 
-The new messages (if any) are returned in the callback (not more than *maxMessages*).
-The messages are automatically acknowledged if *autoAck* option is set to *true*.
-The callback is called in any case, even if there are no new messages.
+| Parameter | Data Type | Description |
+| --- | --- | --- |
+| *error* | GooglePubSub.Error | Error details, or `null` if the operation succeeds |
+| *messages* | Array of GooglePubSub.Message instances | The messages returned |
 
-Only one from all pull operations can be active at a time. An attempt to call a new pull operation while another one is active fails with *PUB_SUB_ERROR.LIBRARY_ERROR* error.
+### periodicPull(*period[, options][, callback]*)
 
-Parameters:
-- *options* - *table* of key-value *strings* - optional - method options. The valid keys are:
-  - *autoAck* - *boolean* - automatically acknowledge the message once it's pulled. Default: *false*
-  - *maxMessages* - *integer* - the maximum number of messages returned. The Google Pub/Sub service may return fewer than the number specified even if there are more messages available. Default: 20
-- *callback* - *function* - optional - callback function to be executed once the operation is completed
+Provides periodic pulling. It periodically checks for new messages and calls any callback if new messages are available at the  time of the check. The new messages are returned in the callback (up to *maxMessages* in number). The messages are automatically acknowledged if the *autoAck* option is `true`.
 
-Returns nothing. A result of the operation may be obtained via the callback function.
+Only one pull operation can be active at a time. An attempt to call a new pull operation while another one is active fails with a *PUB_SUB_ERROR.LIBRARY_ERROR* error.
 
-The callback function signature: **callback(error, messages)**, where:
-- *error* - *GooglePubSub.Error* - error details, *null* if the operation succeeds
-- *messages* - *array* of *GooglePubSub.Message* - messages returned
+| Parameter | Data Type | Required? | Description |
+| --- | --- | --- | --- |
+| *period* | Float | Yes | The period of checks, in seconds. Must be positive. The specified period should not be too small, otherwise a number of HTTP requests per second will exceed Electric Imp’s maximum rate limit and further requests will fail with a *PUB_SUB_ERROR.PUB_SUB_REQUEST_FAILED* error. More information about HTTP request rate-limiting can be found  [here](https://electricimp.com/docs/api/httprequest/) |
+| *options* | Table of key-value strings | Optional | The valid keys (options) are:<b>*autoAck* &mdash; A boolean indicating whether messages should be automatically acknowledged once it's pulled. Default: `false`<br>*maxMessages* &mdash; An integer specifying the maximum number of messages to be returned. The Google Pub/Sub service may return fewer than the number specified even if there are more messages available. Default: 20 |
+| *callback* | Function | Optional | Executed once the operation is completed |
 
-### *GooglePubSub.PullSubscriber.periodicPull(period, options = null, callback = null)*
+The method returns nothing. The result of the operation may be obtained via the callback function, which has the following parameters:
 
-Periodic pulling.
-Periodically checks for new messages and calls a callback if new messages are available at a time of a check.
-
-The new messages are returned in the callback (not more than *maxMessages*).
-The messages are automatically acknowledged if *autoAck* option is set to *true*.
-The callback is not called when there are no new messages at a time of a check.
-
-Only one from all pull operations can be active at a time. An attempt to call a new pull operation while another one is active fails with *PUB_SUB_ERROR.LIBRARY_ERROR* error.
-
-Parameters:
-- *period* - *float* - period of checks, in seconds, must be positive float value. The specified period should not be too small, otherwise a number of http requests per second will exceed Electric Imp maximum rate limit and further requests will fail with *PUB_SUB_ERROR.PUB_SUB_REQUEST_FAILED* error. More information about http requests rate limiting is [here](https://electricimp.com/docs/api/httprequest/)
-- *options* - *table* of key-value *strings* - optional - method options. The valid keys are:
-  - *autoAck* - *boolean* - automatically acknowledge the message once it's pulled. Default: *false*
-  - *maxMessages* - *integer* - the maximum number of messages returned. The Google Pub/Sub service may return fewer than the number specified even if there are more messages available. Default: 20
-- *callback* - *function* - optional - callback function to be executed once the operation is completed
-
-Returns nothing. A result of the operation may be obtained via the callback function.
-
-The callback function signature: **callback(error, messages)**, where:
-- *error* - *GooglePubSub.Error* - error details, *null* if the operation succeeds
-- *messages* - *array* of *GooglePubSub.Message* - messages returned
+| Parameter | Data Type | Description |
+| --- | --- | --- |
+| *error* | GooglePubSub.Error | Error details, or `null` if the operation succeeds |
+| *messages* | Array of GooglePubSub.Message instances | The messages returned |
 
 ### *GooglePubSub.PullSubscriber.pendingPull(options = null, callback = null)*
 
@@ -486,3 +470,6 @@ Returns nothing. A result of the operation may be obtained via the callback func
 The callback function signature: **callback(error, permissions)**, where:
 - *error* - *GooglePubSub.Error* - error details, *null* if the operation succeeds
 - *permissions* - *array* of *strings* - a subset of the permissions that is allowed for the resource.
+
+
+
