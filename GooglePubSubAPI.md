@@ -115,11 +115,7 @@ Publishes the provided message, or array of messages, to the topic.
 
 | Parameter | Data Type | Required? | Description |
 | --- | --- | --- | --- |
-| *message* | Various | Yes | The message(s) to be published. It can be:
-  - any type - raw data value
-  - array of any type - array of raw data values
-  - GooglePubSub.Message instance
-  - array of GooglePubSub.Message instances |
+| *message* | Various | Yes | The message(s) to be published. It can be:<br>&bull; Any type &mdash; Raw data value<br>&bull; Array of any type &mdash; An array of raw data values<br>&bull; GooglePubSub.Message instance<br>&bull; Array of GooglePubSub.Message instances |
 | *callback* | Function | Optional | Executed once the operation is completed |
 
 The method returns nothing. The result of the operation may be obtained via the callback function, which has the following parameters:
@@ -323,26 +319,18 @@ Acknowledges that the message or messages have been received. Acknowledging a me
 
 | Parameter | Data Type | Required? | Description |
 | --- | --- | --- | --- |
-| *message* | Various types | Yes | The message(s) to be acknowledged. It can be:
-  - String &mdash; The acknowledgment ID of the received message
-  - Array of strings &mdash; An array of the acknowledgment IDs
-  - GooglePubSub.Message &mdash; the received GooglePubSub.Message instance
-  - Array of GooglePubSub.Message instances |
+| *message* | Various types | Yes | The message(s) to be acknowledged. It can be:<br>&bull; String &mdash; The acknowledgment ID of the received message<br>&bull; Array of strings &mdash; An array of the acknowledgment IDs<br>&bull; GooglePubSub.Message &mdash; the received GooglePubSub.Message instance<br>&bull; Array of GooglePubSub.Message instances |
 | *callback* | Function | Optional | Executed once the operation is completed |
 
 The method returns nothing. The result of the operation may be obtained via the callback function, which has a single parameter, *error*, which will be `null` on success, or an instance of GooglePubSub.Error.
 
-### modifyAckDeadline(*message, ackDeadlineSeconds[, callback =]*)
+### modifyAckDeadline(*message, ackDeadlineSeconds[, callback]*)
 
 Modifies the acknowledgement deadline for a specific message or messages. This method is useful to indicate that more time is needed to process a message by the subscriber, or to make the message available for redelivery if the processing was interrupted.
 
 | Parameter | Data Type | Required? | Description |
 | --- | --- | --- | --- |
-| *message* | Various types | Yes | The message(s) to be acknowledged. It can be:
-  - String &mdash; The acknowledgment ID of the received message
-  - Array of strings &mdash; An array of the acknowledgment IDs
-  - GooglePubSub.Message &mdash; the received GooglePubSub.Message instance
-  - Array of GooglePubSub.Message instances |
+| *message* | Various types | Yes | The message(s) to be acknowledged. It can be:<br>&bull; String &mdash; The acknowledgment ID of the received message<br>&bull; Array of strings &mdash; An array of the acknowledgment IDs<br>&bull; GooglePubSub.Message &mdash; the received GooglePubSub.Message instance<br>&bull; Array of GooglePubSub.Message instances |
 | *ackDeadlineSeconds* | Integer | Yes | The new acknowledgement deadline, in seconds |
 | *callback* | Function | Optional | Executed once the operation is completed |
 
@@ -445,11 +433,7 @@ Tests the set of permissions for the specified resource (topic or subscription).
 | *permissions* | String or array of string | Yes | The permission(s) to test. Permissions with wildcards such as \* or pubsub.topics.\* are not allowed. For a list of the available permissions see the [Google Cloud Pub/Sub Access Control documentation](https://cloud.google.com/pubsub/docs/access_control) |
 | *callback* | Function | Optional | Executed once the operation is completed |
 
-
-Parameters:
-- *resourceName* - *string* - name of the topic or subscription
-- *permissions* - *string* or *array* of *strings* -
-- *callback* - *function* - optional - callback function to be executed once the operation is completed
+The method returns nothing. The result of the operation may be obtained via the callback function, which has the following parameters:
 
 | Parameter | Data Type | Description |
 | --- | --- | --- |
