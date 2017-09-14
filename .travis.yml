@@ -1,10 +1,10 @@
 language: node_js
-
 node_js:
-  - '5.5'
-
+- '5.5'
 before_script:
-  - npm i -g imptest@latest
-
+- npm i -g imptest@latest
 script:
-  - imptest test
+- imptest test
+before_install:
+- openssl aes-256-cbc -K $encrypted_68f480256ac2_key -iv $encrypted_68f480256ac2_iv
+  -in keys.nut.enc -out keys.nut -d
