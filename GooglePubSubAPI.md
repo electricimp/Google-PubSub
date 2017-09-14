@@ -229,7 +229,7 @@ The method returns nothing. The result of the operation may be obtained via the 
 | *subscrNames* | Array of strings | The names of the subscriptions |
 | *nextOptions* | Table of key-value strings| An *options* table that can be directly used as an argument for subsequent paginated *list()* call; it contains the *pageToken* returned by the currently executed *list()* call. *nextOptions* is `null` if no more results are available, *paginate* was `false`, or the operation failed |
 
-### *iam()*
+### iam()
 
 Returns an instance of the GooglePubSub.IAM class that can be used to execute Identity and Access Management methods for subscriptions.
 
