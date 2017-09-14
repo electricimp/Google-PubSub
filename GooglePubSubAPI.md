@@ -87,11 +87,11 @@ Get a list of the names of all topics registered to the project.
 
 The method returns nothing. The result of the operation may be obtained via the callback function, which has the following parameters:
 
-| Parameter | Data Type | Required? | Description |
-| --- | --- | --- | --- |
-| *error* | GooglePubSub.Error | Yes | Error details, or `null` if the operation succeeds |
-| *topicNames* | Array of strings | Yes | The names of the topics |
-| *nextOptions* | Table of key-value strings | Optional | An *options* table that can be directly used as an argument for a subsequent paginated *list()* call; it contains *pageToken* returned by the currently executed *list()* call. *nextOptions* is `null` if no more results are available, the *paginate* option was `false` or the operation fails |
+| Parameter | Data Type | Description |
+| --- | --- | --- |
+| *error* | GooglePubSub.Error | Error details, or `null` if the operation succeeds |
+| *topicNames* | Array of strings | The names of the topics |
+| *nextOptions* | Table of key-value strings | An *options* table that can be directly used as an argument for a subsequent paginated *list()* call; it contains *pageToken* returned by the currently executed *list()* call. *nextOptions* is `null` if no more results are available, the *paginate* option was `false` or the operation fails |
 
 ### iam()
 
@@ -124,10 +124,10 @@ Publishes the provided message, or array of messages, to the topic.
 
 The method returns nothing. The result of the operation may be obtained via the callback function, which has the following parameters:
 
-| Parameter | Data Type | Required? | Description |
-| --- | --- | --- | --- |
-| *error* | GooglePubSub.Error | Yes | Error details, or `null` if the operation succeeds |
-| *messageIds* | Array of strings | Optional | Google Pub/Sub service IDs of each published message, in the same order as the messages in the request. IDs are guaranteed to be unique within the topic |
+| Parameter | Data Type | Description |
+| --- | --- | --- |
+| *error* | GooglePubSub.Error | Error details, or `null` if the operation succeeds |
+| *messageIds* | Array of strings | Google Pub/Sub service IDs of each published message, in the same order as the messages in the request. IDs are guaranteed to be unique within the topic |
 
 ## GooglePubSub.SubscriptionConfig
 
@@ -184,10 +184,10 @@ Obtains the specified subscription. If a subscription with the specified name ex
 
 The method returns nothing. The result of the operation may be obtained via the callback function, which has the following parameters:
 
-| Parameter | Data Type | Required? | Description |
-| --- | --- | --- | --- |
-| *error* | GooglePubSub.Error | Yes | Error details, or `null` if the operation succeeds |
-| *subscrConfig* | GooglePubSub.SubscriptionConfig | Yes | The configuration of the obtained subscription |
+| Parameter | Data Type | Description |
+| --- | --- | --- |
+| *error* | GooglePubSub.Error | Error details, or `null` if the operation succeeds |
+| *subscrConfig* | GooglePubSub.SubscriptionConfig | The configuration of the obtained subscription |
 
 ### modifyPushConfig(*subscriptionName, pushConfig[, callback]*)
 
@@ -227,17 +227,17 @@ Gets a list of the names of all subscriptions registered to the project or relat
 
 The method returns nothing. The result of the operation may be obtained via the callback function, which has the following parameters:
 
-| Parameter | Data Type | Required? | Description |
-| --- | --- | --- | --- |
-| *error* | GooglePubSub.Error | Yes | Error details, or `null` if the operation succeeds |
-| *subscrNames* | Array of strings | Yes | The names of the subscriptions |
-| *nextOptions* | Table of key-value strings| Yes | An *options* table that can be directly used as an argument for subsequent paginated *list()* call; it contains the *pageToken* returned by the currently executed *list()* call. *nextOptions* is `null` if no more results are available, *paginate* was `false`, or the operation failed |
+| Parameter | Data Type | Description |
+| --- | --- | --- |
+| *error* | GooglePubSub.Error | Error details, or `null` if the operation succeeds |
+| *subscrNames* | Array of strings | The names of the subscriptions |
+| *nextOptions* | Table of key-value strings| An *options* table that can be directly used as an argument for subsequent paginated *list()* call; it contains the *pageToken* returned by the currently executed *list()* call. *nextOptions* is `null` if no more results are available, *paginate* was `false`, or the operation failed |
 
 ### *iam()*
 
 Returns an instance of the GooglePubSub.IAM class that can be used to execute Identity and Access Management methods for subscriptions.
 
-### *getImpAgentEndpoint(*[relativePath][, secretToken]*)
+### getImpAgentEndpoint(*[relativePath][, secretToken]*)
 
 Composes and returns an endpoint URL based on the URL of the agent where the library is running. The resulting URL can be used to create a push subscription and receive messages from this subscription using the GooglePubSub.PushSubscriber class.
 
@@ -295,181 +295,163 @@ The method returns nothing. The result of the operation may be obtained via the 
 | *error* | GooglePubSub.Error | Error details, or `null` if the operation succeeds |
 | *messages* | Array of GooglePubSub.Message instances | The messages returned |
 
-### *GooglePubSub.PullSubscriber.pendingPull(options = null, callback = null)*
+### pendingPull(*[options][, callback]*)
 
-Pending (waiting) pulling.
-Waits for new messages and calls a callback when new messages appear.
+Provides pending (waiting) pulling. It waits for new messages and calls any callback when new messages appear. The new messages are returned in the callback (up to *maxMessages* in number). The messages are automatically acknowledged if the *autoAck* option is `true`.
 
-The new messages are returned in the callback (not more than *maxMessages*).
-The messages are automatically acknowledged if *autoAck* option is set to *true*.
-The callback is called only when new messages are available (or in case of an error).
+Only one pull operation can be active at a time. An attempt to call a new pull operation while another one is active fails with a *PUB_SUB_ERROR.LIBRARY_ERROR* error.
 
-Only one from all pull operations can be active at a time. An attempt to call a new pull operation while another one is active fails with *PUB_SUB_ERROR.LIBRARY_ERROR* error.
+| Parameter | Data Type | Required? | Description |
+| --- | --- | --- | --- |
+| *options* | Table of key-value strings | Optional | The valid keys (options) are:<br>*repeat* &mdash; A boolean: if `true`, *pendingPull()* is automatically called with the same parameters after the callback is executed. Default: `false`<br>*autoAck* &mdash; A boolean indicating whether messages should be automatically acknowledged once it's pulled. Default: `false`<br>*maxMessages* &mdash; An integer specifying the maximum number of messages to be returned. The Google Pub/Sub service may return fewer than the number specified even if there are more messages available. Default: 20 |
+| *callback* | Function | Optional | Executed once the operation is completed |
 
-Parameters:
-- *options* - *table* of key-value *strings* - optional - method options. The valid keys are:
-  - *repeat* - *boolean* - if *true*, a new *GooglePubSub.PullSubscriber.pendingPull()* method with the same parameters is automatically called by the library after the callback is executed. Default: *false*
-  - *autoAck* - *boolean* - automatically acknowledge the message once it's pulled. Default: *false*
-  - *maxMessages* - *integer* - the maximum number of messages returned. The Google Pub/Sub service may return fewer than the number specified even if there are more messages available. Default: 20
-- *callback* - *function* - optional - callback function to be executed once the operation is completed
+The method returns nothing. The result of the operation may be obtained via the callback function, which has the following parameters:
 
-Returns nothing. A result of the operation may be obtained via the callback function.
+| Parameter | Data Type | Description |
+| --- | --- | --- |
+| *error* | GooglePubSub.Error | Error details, or `null` if the operation succeeds |
+| *messages* | Array of GooglePubSub.Message instances | The messages returned |
 
-The callback function signature: **callback(error, messages)**, where:
-- *error* - *GooglePubSub.Error* - error details, *null* if the operation succeeds
-- *messages* - *array* of *GooglePubSub.Message* - messages returned
+### stopPull()
 
-### *GooglePubSub.PullSubscriber.stopPull()*
+Stops periodic or pending pull operation if it was started by *periodicPull()* or *pendingPull()*. It does nothing if no periodic or pending pull operation is currently active.
 
-Stops periodic or pending pull operation if it was started by *GooglePubSub.PullSubscriber.periodicPull()* or *GooglePubSub.PullSubscriber.pendingPull()* methods earlier.
-Does nothing if no periodic or pending pull operation is active at this moment.
+### ack(*message[, callback]*)
 
-Returns nothing.
+Acknowledges that the message or messages have been received. Acknowledging a message whose acknowledgement deadline has expired may succeed, but such a message may be redelivered by the Google Pub/Sub service later. Acknowledging a message more than once will not result in an error.
 
-### *GooglePubSub.PullSubscriber.ack(message, callback = null)*
+| Parameter | Data Type | Required? | Description |
+| --- | --- | --- | --- |
+| *message* | Various types | Yes | The message(s) to be acknowledged. It can be:
+  - String &mdash; The acknowledgment ID of the received message
+  - Array of strings &mdash; An array of the acknowledgment IDs
+  - GooglePubSub.Message &mdash; the received GooglePubSub.Message instance
+  - Array of GooglePubSub.Message instances |
+| *callback* | Function | Optional | Executed once the operation is completed |
 
-Acknowledges to the Google Pub/Sub service that the message(s) has been received.
+The method returns nothing. The result of the operation may be obtained via the callback function, which has a single parameter, *error*, which will be `null` on success, or an instance of GooglePubSub.Error.
 
-Acknowledging a message whose ack deadline has expired may succeed, but such a message may be redelivered by the Google Pub/Sub service later.
-Acknowledging a message more than once will not result in an error.
+### modifyAckDeadline(*message, ackDeadlineSeconds[, callback =]*)
 
-Parameters:
-- *message* - different types - the message(s) to be acknowledged. It can be:
-  - *string* - acknowledgment ID of the received message
-  - *array* of *strings* - array of the acknowledgment IDs
-  - *GooglePubSub.Message* - the received *GooglePubSub.Message* instance
-  - *array* of *GooglePubSub.Message* - array of the received *GooglePubSub.Message* instances
-- *callback* - *function* - optional - callback function to be executed once the operation is completed
+Modifies the acknowledgement deadline for a specific message or messages. This method is useful to indicate that more time is needed to process a message by the subscriber, or to make the message available for redelivery if the processing was interrupted.
 
-Returns nothing. A result of the operation may be obtained via the callback function.
+| Parameter | Data Type | Required? | Description |
+| --- | --- | --- | --- |
+| *message* | Various types | Yes | The message(s) to be acknowledged. It can be:
+  - String &mdash; The acknowledgment ID of the received message
+  - Array of strings &mdash; An array of the acknowledgment IDs
+  - GooglePubSub.Message &mdash; the received GooglePubSub.Message instance
+  - Array of GooglePubSub.Message instances |
+| *ackDeadlineSeconds* | Integer | Yes | The new acknowledgement deadline, in seconds |
+| *callback* | Function | Optional | Executed once the operation is completed |
 
-The callback function signature: **callback(error)**, where:
-- *error* - *GooglePubSub.Error* - error details, *null* if the operation succeeds
+The method returns nothing. The result of the operation may be obtained via the callback function, which has a single parameter, *error*, which will be `null` on success, or an instance of GooglePubSub.Error.
 
-### *GooglePubSub.PullSubscriber.modifyAckDeadline(message, ackDeadlineSeconds, callback = null)*
+## GooglePubSub.PushSubscriber
 
-Modifies the ack deadline for a specific message(s).
+Allows your code to receive messages from a push subscription. The messages are automatically acknowledged by the library.
 
-This method is useful to indicate that more time is needed to process a message by the subscriber, or to make the message available for redelivery if the processing was interrupted.
+### Constructor: GooglePubSub.PushSubscriber(*projectId, oAuthTokenProvider, subscriptionName*)
 
-Parameters:
-- *message* - different types - the message(s) whose ack deadline to be modified. It can be:
-  - *string* - acknowledgment ID of the received message
-  - *array* of *strings* - array of the acknowledgment IDs
-  - *GooglePubSub.Message* - the received *GooglePubSub.Message* instance
-  - *array* of *GooglePubSub.Message* - array of the received *GooglePubSub.Message* instances
-- *ackDeadlineSeconds* - *integer* - the new ack deadline, in seconds
-- *callback* - *function* - optional - callback function to be executed once the operation is completed
+| Parameter | Data Type | Required? | Description |
+| --- | --- | --- | --- |
+| *projectId* | String | Yes  | The project’s ID |
+| *oAuthTokenProvider* | Object | Yes | The provider of access tokens suitable for Google Pub/Sub service requests authentication. See [here](/README.md#access-token-provider) for more information |
+| *subscriptionName* | String | Yes | The unique name of the subscription |
 
-Returns nothing. A result of the operation may be obtained via the callback function.
+### setMessagesHandler(*messagesHandler[, callback]*)
 
-The callback function signature: **callback(error)**, where:
-- *error* - *GooglePubSub.Error* - error details, *null* if the operation succeeds
+Checks if the subscription is configured with an appropriate push endpoint URL (based on URL of the agent where the library is running) and sets the specified handler function to be executed every time new messages are received from the Google Pub/Sub service.
 
-## Class *GooglePubSub.PushSubscriber*
+If the subscription is not configured with an appropriate URL, the operation fails with a *PUB_SUB_ERROR.LIBRARY_ERROR* error.
 
-Allows to receive messages from a push subscription of Google Cloud Pub/Sub service configured with a push endpoint which is based on URL of the IMP agent where the library is running. The messages are automatically acknowledged by the library.
+| Parameter | Data Type | Required? | Description |
+| --- | --- | --- | --- |
+| *messagesHandler* | Function | Yes | The function to be executed when new messages are received |
+| *callback* | Function | Optional | Executed once the operation is completed |
 
-### Constructor *GooglePubSub.PushSubscriber(projectId, oAuthTokenProvider, subscrName)*
+The *messagesHandler* function has the following parameters:
 
-Parameters:
-- *projectId* - *string* - Google Cloud Project ID
-- *oAuthTokenProvider* - *object* - provider of access tokens suitable for Google Pub/Sub service requests authentication, [see here](/README.md#access-token-provider)
-- *subscrName* - *string* - name of the subscription to receive messages from
+| Parameter | Data Type | Description |
+| --- | --- | --- |
+| *error* | GooglePubSub.Error | Error details. When the received messages have an incorrect format, *PUB_SUB_ERROR.PUB_SUB_UNEXPECTED_RESPONSE* error is reported, otherwise `null` if the received messages are correctly formatted |
+| *messages* | An array GooglePubSub.Message instances | The messages that have been received |
 
-Returns:
-- *GooglePubSub.PushSubscriber* instance
+The method returns nothing. The result of the operation may be obtained via the callback function, which has a single parameter, *error*, which will be `null` on success, or an instance of GooglePubSub.Error.
 
-### *GooglePubSub.PushSubscriber.setMessagesHandler(messagesHandler, callback = null)*
+## GooglePubSub.IAM.Policy
 
-Checks if the subscription is configured by appropriate push endpoint URL (based on URL of the IMP agent where the library is running) and sets the specified handler function to be executed every time new messages are received from the Google Pub/Sub service.
+Represents a Google Identity and Access Management (IAM) policy and has the following public properties:
 
-If the subscription is not configured by an appropriate URL, the operation fails with *PUB_SUB_ERROR.LIBRARY_ERROR* error.
+- *version* &mdash; An integer indicating the version of the policy.
+- *bindings* &mdash; An array of tables each with the keys *role* (string) and *members* (array of strings) which detail the bindings. Every binding binds a list of members to a role, where the members can be user accounts, Google groups, Google domains, or service accounts. Each role is a named set of permissions defined by IAM. For a list of the supported roles see the [Google Cloud Pub/Sub Access Control documentation](https://cloud.google.com/pubsub/docs/access_control).
+- *etag* &mdash; A string containing the [entity tag](https://cloud.google.com/pubsub/docs/reference/rest/v1/Policy).
 
-Parameters:
-- *messagesHandler* - *function* - the handler function to be executed when new messages are received
-- *callback* - *function* - optional - callback function to be executed once the operation is completed
+### Constructor: GooglePubSub.IAM.Policy(*[version][, bindings][, etag]*)
 
-The handler function signature: **messagesHandler(error, messages)**, where:
-- *error* - *GooglePubSub.Error* - error details - in case when the received messages have incorrect format then  *PUB_SUB_ERROR.PUB_SUB_UNEXPECTED_RESPONSE* error is reported; *null* if the received messages are correct
-- *messages* - *array* of *GooglePubSub.Message* - messages received
+| Parameter | Data Type | Required? | Description |
+| --- | --- | --- | --- |
+| *version* | Integer | Optional | The version of the policy. Default: 0 |
+| *bindings* | Array of tables | Optional | The bindings *(see above)* |
+| *etag* | String | Optional | An entity tag. See [here](https://cloud.google.com/pubsub/docs/reference/rest/v1/Policy) for more information |
 
-Returns nothing. A result of the operation may be obtained via the callback function.
-
-The callback function signature: **callback(error)**, where:
-- *error* - *GooglePubSub.Error* - error details, *null* if the operation succeeds
-
-## Class *GooglePubSub.IAM.Policy*
-
-Represents Google Identity and Access Management (IAM) policy.
-
-Public fields:
-- *version* - *integer* - version of the policy
-- *bindings* - *array* of *tables* { "role" : *string*, "members" : *array* of *strings* } - array of bindings. Every binding binds a list of members to a role, where the "members" can be user accounts, Google groups, Google domains, service accounts; the "role" is a named set of permissions defined by IAM. For a list of the supported roles see [Google Cloud Pub/Sub Access Control documentation](https://cloud.google.com/pubsub/docs/access_control).
-- *etag* - *string* - entity tag. See [here](https://cloud.google.com/pubsub/docs/reference/rest/v1/Policy).
-
-### Constructor *GooglePubSub.IAM.Policy(version = 0, bindings = null, etag = null)*
-
-Parameters:
-- *version* - *integer* - optional - version of the policy. Default: 0
-- *bindings* - *array* of *tables* { "role" : *string*, "members" : *array* of *strings* } - optional - array of bindings (see the description of *bindings* public field)
-- *etag* - *string* - optional - entity tag. See [here](https://cloud.google.com/pubsub/docs/reference/rest/v1/Policy).
-
-Returns:
-- *GooglePubSub.IAM.Policy* instance that can be passed as an argument to *GooglePubSub.IAM.setPolicy()* method to set a resource policy.
-
-## Class *GooglePubSub.IAM*
+## GooglePubSub.IAM
 
 Provides Google Identity and Access Management (IAM) functionality for individual Google Pub/Sub resources (topics and subscriptions).
 
-IAM and its features are described in details in the [Google Cloud Identity and Access Management overview](https://cloud.google.com/iam/docs/overview)
+IAM and its features are described in details in the [Google Cloud Identity and Access Management Overview](https://cloud.google.com/iam/docs/overview)
 
-### *GooglePubSub.IAM.getPolicy(resourceName, callback = null)*
+### getPolicy(*resourceName[, callback]*)
 
 Gets the access control policy for the specified resource (topic or subscription).
 
+| Parameter | Data Type | Required? | Description |
+| --- | --- | --- | --- |
+| *resourceName* | String | Yes | The name of the required topic or subscription |
+| *callback* | Function | Optional | Executed once the operation is completed |
+
+The method returns nothing. The result of the operation may be obtained via the callback function, which has the following parameters:
+
+| Parameter | Data Type | Description |
+| --- | --- | --- |
+| *error* | GooglePubSub.Error | Error details, or `null` if the operation succeeds |
+| *policy* | GooglePubSub.IAM.Policy | IAM policy obtained for the resource |
+
+### setPolicy(*resourceName, policy[, callback]*)
+
+Sets the access control policy on the specified resource (topic or subscription). It replaces any previous policy.
+
+| Parameter | Data Type | Required? | Description |
+| --- | --- | --- | --- |
+| *resourceName* | String | Yes | The name of the required topic or subscription |
+| *policy* | GooglePubSub.IAM.Policy | Yes | The IAM policy to be applied |
+| *callback* | Function | Optional | Executed once the operation is completed |
+
+The method returns nothing. The result of the operation may be obtained via the callback function, which has the following parameters:
+
+| Parameter | Data Type | Description |
+| --- | --- | --- |
+| *error* | GooglePubSub.Error | Error details, or `null` if the operation succeeds |
+| *policy* | GooglePubSub.IAM.Policy | The new IAM policy for the resource |
+
+### testPermissions(*resourceName, permissions[, callback]*)
+
+Tests the set of permissions for the specified resource (topic or subscription). If the resource does not exist, this operation returns an empty set of permissions, rather than a *PUB_SUB_ERROR.PUB_SUB_REQUEST_FAILED* error.
+
+| Parameter | Data Type | Required? | Description |
+| --- | --- | --- | --- |
+| *resourceName* | String | Yes | The name of the required topic or subscription |
+| *permissions* | String or array of string | Yes | The permission(s) to test. Permissions with wildcards such as \* or pubsub.topics.\* are not allowed. For a list of the available permissions see the [Google Cloud Pub/Sub Access Control documentation](https://cloud.google.com/pubsub/docs/access_control) |
+| *callback* | Function | Optional | Executed once the operation is completed |
+
+
 Parameters:
 - *resourceName* - *string* - name of the topic or subscription
+- *permissions* - *string* or *array* of *strings* -
 - *callback* - *function* - optional - callback function to be executed once the operation is completed
 
-Returns nothing. A result of the operation may be obtained via the callback function.
-
-The callback function signature: **callback(error, policy)**, where:
-- *error* - *GooglePubSub.Error* - error details, *null* if the operation succeeds
-- *policy* - *GooglePubSub.IAM.Policy* - IAM policy obtained for the resource.
-
-### *GooglePubSub.IAM.setPolicy(resourceName, policy, callback = null)*
-
-Sets the access control policy on the specified resource (topic or subscription).
-Replaces the previous policy, if it existed for the resource.
-
-Parameters:
-- *resourceName* - *string* - name of the topic or subscription
-- *policy* - *GooglePubSub.IAM.Policy* - IAM policy to be set
-- *callback* - *function* - optional - callback function to be executed once the operation is completed
-
-Returns nothing. A result of the operation may be obtained via the callback function.
-
-The callback function signature: **callback(error, policy)**, where:
-- *error* - *GooglePubSub.Error* - error details, *null* if the operation succeeds
-- *policy* - *GooglePubSub.IAM.Policy* - new IAM policy of the resource
-
-### *GooglePubSub.IAM.testPermissions(resourceName, permissions, callback = null)*
-
-Tests the set of permissions for the specified resource (topic or subscription).
-
-If the resource does not exist, this operation returns an empty set of permissions, not *PUB_SUB_ERROR.PUB_SUB_REQUEST_FAILED* error.
-
-Parameters:
-- *resourceName* - *string* - name of the topic or subscription
-- *permissions* - *string* or *array* of *strings* - the permission(s) to test for the resource. Permissions with wildcards such as \* or pubsub.topics.\* are not allowed. For a list of the available permissions see [Google Cloud Pub/Sub Access Control documentation](https://cloud.google.com/pubsub/docs/access_control)
-- *callback* - *function* - optional - callback function to be executed once the operation is completed
-
-Returns nothing. A result of the operation may be obtained via the callback function.
-
-The callback function signature: **callback(error, permissions)**, where:
-- *error* - *GooglePubSub.Error* - error details, *null* if the operation succeeds
-- *permissions* - *array* of *strings* - a subset of the permissions that is allowed for the resource.
-
-
-
+| Parameter | Data Type | Description |
+| --- | --- | --- |
+| *error* | GooglePubSub.Error | Error details, or `null` if the operation succeeds |
+| *permissions* | Array of strings | A subset of the permissions set for the resource |
