@@ -1,56 +1,63 @@
 # GooglePubSub Examples
 
-## Examples Overview
-
-This readme describes example applications provided with [GooglePubSub library](../README.md).
+This document describes the sample applications provided with the [GooglePubSub library](../README.md).
 
 The following example applications are provided:
-- *Publisher*
-- *PullSubscriber*
-- *PushSubscriber*
-- *ProjectInfo*
+- Publisher
+- PullSubscriber
+- PushSubscriber
+- ProjectInfo
 
-To see the messages comming you need to run *PullSubscriber* and/or *PushSubscriber* examples in parallel with *Publisher* example.
-The recommended order of the examples running:
-- run *Publisher* example on the agent of your first IMP device
-- run *PullSubscriber* example on the agent of your second IMP device
-- run *PushSubscriber* example on the agent of your third IMP device
+We recommend that you:
+- run Publisher on the agent of one device
+- run PullSubscriber on the agent of a second device
+- run PushSubscriber on the agent of a third device
 
-*ProjectInfo* example may be run many times at any moment. But note, it displays nothing if no topics/subscriptions have been created in your project (e.g. by running other provided examples). 
+To see messages arriving you need to run the PullSubscriber and/or PushSubscriber examples alongside the Publisher example.
 
-### Publisher Example
+The ProjectInfo example may be run at any time. However, it displays nothing if no topics or subscriptions have been created in your project, for example by running any of the other examples.
 
-This example publishes Pub/Sub Messages to the *"test_topic"* Pub/Sub topic which belong to the specified (by *PROJECT_ID* configuration constant) Google Cloud Project.
+Each example is described below. If you wish to try one out, you'll find generic and example-specific setup instructions further down the page.
 
-- *"test_topic"* topic is created if it does not exist.
-- One message is published every 10 seconds.
+## Publisher
+
+This example publishes messages to the topic `"test_topic"`.
+
+### Notes
+
+- The topic `"test_topic"` is created if it does not exist.
+- One message is published every ten seconds.
 - Every message contains:
-  - message data - a "fake" data, integer, starts from 1 and increases by 1 with every message. Restarts from 1 when the example is restarted.
-  - *"measureTime"* attribute - measurement time in seconds since the epoch format.
+  - Message data in the form of an integer which starts at 1 and increases by 1 with every message published. It restarts from 1 when the example is restarted.
+  - A message attribute, `"measureTime"`, which is the time in seconds since the epoch.
 
 ![Publisher example](http://imgur.com/tggTPYg.png)
 
-### PullSubscriber Example
+## PullSubscriber
 
-This example receives Pub/Sub Messages from the *"test_pull_subscription"* Pub/Sub pull subscription which belong to the specified (by *PROJECT_ID* configuration constant) Google Cloud Project and prints the messages content. 
+This example receives messages from a pull subscription called `"test_pull_subscription"` and prints the messages content. 
 
-- *"test_pull_subscription"* subscription is created if it does not exist:
-  - the subscription is related to *"test_topic"* topic,
-  - it is a pull type subscription.
-- Messages are received using repeated pending pull operation - *GooglePubSub.PullSubscriber.pendingPull()*.
-- Messages are acknowledged automatically using *autoAck* option of the pull operation.
+### Notes
+
+- The subscription `"test_pull_subscription"` is created if it does not exist.
+  - The subscription is related to the topic `"test_topic"`
+  - It is a pull type subscription
+- Messages are received using repeated pending pull operations.
+- Messages are acknowledged automatically using the *autoAck* option of the pull operation.
 - The following information is printed out for every message:
-  - value of the message data,
-  - all custom attributes of the message,
-  - the standard *"publishTime"* attribute.
+  - The value of the message data
+  - All of the message’s custom attributes
+  - The standard `"publishTime"` attribute.
 
 ![PullSubscriber example](http://imgur.com/WDQ9lGQ.png)
 
-### PushSubscriber Example
+## PushSubscriber
 
-This example receives Pub/Sub Messages from the *"test_push_subscription"* Pub/Sub push subscription which belong to the specified (by *PROJECT_ID* configuration constant) Google Cloud Project and prints the messages content.
+This example receives messages from the push subscription `"test_push_subscription"` and prints the messages content.
 
-Additional setup is required before running this application. See [Additional Setup For PushSubscriber Example](#additional-setup-for-pushsubscriber-example) section below.
+Additional setup is required before you can run this application. See the [Additional Setup for the PushSubscriber Example](#additional-setup-for-the-pushsubscriber-example) section below for details.
+
+### Notes
 
 - *"test_push_subscription"* subscription is created if it does not exist:
   - the subscription is related to *"test_topic"* topic,
@@ -64,63 +71,65 @@ Additional setup is required before running this application. See [Additional Se
 
 ![PushSubscriber example](http://imgur.com/HjXJrfz.png)
 
-### ProjectInfo Example
+## ProjectInfo
 
-This example collects and prints information about Pub/Sub topics and subscriptions which belong to the specified (by *PROJECT_ID* configuration constant) Google Cloud Project.
-
-The following information is printed out:
-- list of topics
-- IAM Policy of every topic
-- list of subscriptions related to every topic
-- configuration of every subscription
-- IAM Policy of every subscription
+This example collects and prints information about topics and subscriptions. The following information is printed out:
+- A list of topics
+- The IAM Policy of every topic
+- A list of subscriptions related to each topic
+- The configuration of every subscription
+- The IAM Policy of every subscription
 
 ![ProjectInfo example](http://imgur.com/VDKgV7c.png)
 
 ## Examples Setup
 
-Copy and paste the code for the example you wish to run.  
+Copy and paste the code linked below for the example you wish to run.  
 
-- [*Publisher*](./Publisher.agent.nut)
-- [*PullSubscriber*](./PullSubscriber.agent.nut)
-- [*PushSubscriber*](./PushSubscriber.agent.nut)
-- [*ProjectInfo*](./ProjectInfo.agent.nut)
+- [Publisher](./Publisher.agent.nut)
+- [PullSubscriber](./PullSubscriber.agent.nut)
+- [PushSubscriber](./PushSubscriber.agent.nut)
+- [ProjectInfo](./ProjectInfo.agent.nut)
 
-Before running an example application you need to set the configuration constants in the application (IMP agent) source code. The instructions below will walk you through the necessary steps. The PushSubscriber will need addtional setup. These are outlined in the [Additional Setup For PushSubscriber Example](#additional-setup-for-pushsubscriber-example) section.
+Before running an example application you need to set the configuration constants in the application (agent) source code. The instructions below will walk you through the necessary steps. The PushSubscriber exampled will need additional setup work and this is outlined [after the general steps](#additional-setup-for-the-pushsubscriber-example).
 
-### Common Setup For All Examples
+### Setup For All Examples
 
-#### Google Cloud account configuration
+#### Google Cloud Account Configuration
+
 - Login at [Google Cloud Console](https://console.cloud.google.com) in your web browser.
-- If you have an existing project that you want to work with, skip this step. 
-Otherwise click "Select a project" link and click "+" in the opened window.
+- If you have an existing project that you want to work with, skip this step, otherwise click the ‘Select a project’ link and click ‘+’ in the opened window:
 ![Project create](http://imgur.com/2FbH9S6.png)
-Enter "Project name" and click "Create".
-- Click "Select a project" link and choose your project.
-Copy ID of your project, the value will be used as **PROJECT_ID** configuration constant value.
+Enter a project name and click ‘Create’.
+- Click the ‘Select a project’ link and choose your project.
+Copy your project’s ID &mdash; it will be used as the *PROJECT_ID* constant.
 ![Project select](http://imgur.com/PR9U25p.png)
-- In the left side menu choose "Pub/Sub".
+- In the hamburger menu choose ‘Pub/Sub’:
 ![PubSub menu](http://imgur.com/81zNGg1.png)
-- Click "Enable API".
+- Click ‘Enable API’:
 ![PubSub enable](http://imgur.com/MS7MnZK.png)
 
-
 #### OAuth 2.0 JWT Profile configuration
-- Follow the instructions from [JWT Profile for OAuth 2.0](https://github.com/electricimp/OAuth-2.0/tree/master/examples#jwt-profile-for-oauth-20) to obtain all the required constants for OAuth 2.0 JWT Profile configuration - **GOOGLE_ISS, GOOGLE_SECRET_KEY, AWS_LAMBDA_REGION, AWS_ACCESS_KEY_ID, AWS_SECRET_ACCESS_KEY**.
 
-#### Example constants setup
-- Set the example code configuration constants (**PROJECT_ID, GOOGLE_ISS, GOOGLE_SECRET_KEY, AWS_LAMBDA_REGION, AWS_ACCESS_KEY_ID, AWS_SECRET_ACCESS_KEY**) with the values retrieved on the previous steps. You can use the same configuration constants when running examples in parallel.  
+Follow the instructions from [JWT Profile for OAuth 2.0](https://github.com/electricimp/OAuth-2.0/tree/master/examples#jwt-profile-for-oauth-20) to obtain all the required constants for OAuth 2.0 JWT Profile configuration, which you’ll need to enter into the constants *GOOGLE_ISS*, *GOOGLE_SECRET_KEY*, *AWS_LAMBDA_REGION*, *AWS_ACCESS_KEY_ID* and *AWS_SECRET_ACCESS_KEY*.
+
+#### Constants Setup
+
+Set the example code configuration constants (*PROJECT_ID*, *GOOGLE_ISS*, *GOOGLE_SECRET_KEY*, *AWS_LAMBDA_REGION*, *AWS_ACCESS_KEY_ID*, *AWS_SECRET_ACCESS_KEY*) with the values retrieved in the previous steps. You can use the same configuration constants when running examples in parallel.  
 ![Examples config](http://imgur.com/G0Mw9uv.png)
 
-### Additional Setup For PushSubscriber Example
+### Additional Setup for the PushSubscriber Example
 
-#### Register the push endpoint in Google Cloud Platform
-- Copy your imp Agent URL from Electric Imp IDE Device Settings.
-- Go to [Google Search Console](https://www.google.com/webmasters/tools), enter your imp Agent URL and click "Add a property"
+This must be performed **before** you use the example code. You will need to assign your device to a new model first.
+
+#### Register the Push Endpoint
+
+- Copy your device’s agent URL from the Electric Imp IDE.
+- Go to the [Google Search Console](https://www.google.com/webmasters/tools), enter your agent URL and click ‘Add a property’:
 ![Search console add property](http://imgur.com/ZFpLQHY.png)
-- Download suggested HTML verification file
+- Download the suggested HTML verification file:
 ![Search console download](http://imgur.com/AEe7O69.png)
-- Copy the following code to Electric Imp IDE Agent section, substitute GOOGLE_SITE_VERIFICATION value with the whole content of downloaded HTML verification file and click "Build and Run"
+- Add the following code to your agent. Make sure you enter the *GOOGLE_SITE_VERIFICATION* value with the downloaded HTML verification file’s contents, and then click ‘Build and Run’.
 ```squirrel
 const GOOGLE_SITE_VERIFICATION = "...";
 http.onrequest(function (request, response) {
@@ -128,15 +137,15 @@ http.onrequest(function (request, response) {
 });
 ```
 ![Imp verification code](http://imgur.com/HzSt05P.png)
-Note, this verification is needed only once per one IMP Agent. Make sure the above code is not included in your application source code (e.g. in PushSubscriber example), otherwise message receiving will not work.
-- In Google Search Console click to the link "Confirm successful upload by visiting ... in your browser" and then click "Verify".
+This verification is needed only once per agent, and you should replace the above code with the example application code. Make sure the above code is not included in your example source code, otherwise messages will not be received.
+- In the [Google Search Console](https://www.google.com/webmasters/tools), click on the link ‘Confirm successful upload by visiting ... in your browser’ and then click ‘Verify’:
 ![Search console steps](http://imgur.com/l8z6WvP.png)
-You should receive success message like "Congratulations, you have successfully verified your ownership of ..."
-- Go to [Google Cloud Console](https://console.cloud.google.com)
+You should receive a success message like “Congratulations, you have successfully verified your ownership of ...”
+- Go to the [Google Cloud Console](https://console.cloud.google.com).
 - Select your project.
-- In the left side menu choose "APIs & Services", then select "Credentials".
+- In the hamburger menu choose ‘APIs & Services’, then select ‘Credentials’:
 ![Credentials](http://imgur.com/ewnRN6i.png)
-- Select "Domain verification" and click "Add domain".
+- Select ‘Domain verification’ and click ‘Add domain’:
 ![Domain verification](http://imgur.com/XfQwV1f.png)
-- Enter your imp Agent URL and click "Add domain".
+- Enter your agent URL and click ‘Add domain’:
 ![Add domain](http://imgur.com/SmNDmsf.png)
