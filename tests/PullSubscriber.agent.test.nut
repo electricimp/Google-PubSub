@@ -59,24 +59,26 @@ class PullSubscriberTestCase extends ImpTestCase {
         _publisher = GooglePubSub.Publisher(GOOGLE_PROJECT_ID, _oAuthTokenProvider, TOPIC_NAME_1);
         _subscrs = GooglePubSub.Subscriptions(GOOGLE_PROJECT_ID, _oAuthTokenProvider);
         _subscriber = GooglePubSub.PullSubscriber(GOOGLE_PROJECT_ID, _oAuthTokenProvider, SUBSCR_NAME_1);
-        tearDown(); // clean up topics/subscriptions first
-        return Promise(function (resolve, reject) {
-            _topics.obtain(TOPIC_NAME_1, { "autoCreate" : true }, function (error) {
-                if (error) {
-                    return reject(format("topic %s isn't created: %s", TOPIC_NAME_1, error.details));
-                }
-                local config1 = GooglePubSub.SubscriptionConfig(
-                    TOPIC_NAME_1, 10, GooglePubSub.PushConfig(_subscrs.getImpAgentEndpoint(null, "12345")));
-                _subscrs.obtain(SUBSCR_NAME_2, { "autoCreate" : true, "subscrConfig" : config1 }, function (error, subscrConfig) {
+        // clean up topics/subscriptions first
+        return tearDown().then(function(value) {
+            return Promise(function (resolve, reject) {
+                _topics.obtain(TOPIC_NAME_1, { "autoCreate" : true }, function (error) {
                     if (error) {
-                        return reject(format("subscription %s isn't created: %s", SUBSCR_NAME_2, error.details));
+                        return reject(format("topic %s isn't created: %s", TOPIC_NAME_1, error.details));
                     }
-                    local config2 = GooglePubSub.SubscriptionConfig(TOPIC_NAME_1);
-                    _subscrs.obtain(SUBSCR_NAME_1, { "autoCreate" : true, "subscrConfig" : config2 }, function (error, subscrConfig) {
+                    local config1 = GooglePubSub.SubscriptionConfig(
+                        TOPIC_NAME_1, 10, GooglePubSub.PushConfig(_subscrs.getImpAgentEndpoint(null, "12345")));
+                    _subscrs.obtain(SUBSCR_NAME_2, { "autoCreate" : true, "subscrConfig" : config1 }, function (error, subscrConfig) {
                         if (error) {
-                            return reject(format("subscription %s isn't created: %s", SUBSCR_NAME_1, error.details));
+                            return reject(format("subscription %s isn't created: %s", SUBSCR_NAME_2, error.details));
                         }
-                        return resolve("");
+                        local config2 = GooglePubSub.SubscriptionConfig(TOPIC_NAME_1);
+                        _subscrs.obtain(SUBSCR_NAME_1, { "autoCreate" : true, "subscrConfig" : config2 }, function (error, subscrConfig) {
+                            if (error) {
+                                return reject(format("subscription %s isn't created: %s", SUBSCR_NAME_1, error.details));
+                            }
+                            return resolve("");
+                        }.bindenv(this));
                     }.bindenv(this));
                 }.bindenv(this));
             }.bindenv(this));
