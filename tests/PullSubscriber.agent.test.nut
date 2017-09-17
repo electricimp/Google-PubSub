@@ -22,9 +22,9 @@
 // ARISING FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR
 // OTHER DEALINGS IN THE SOFTWARE.
 
-@include "github:electricimp/AWSRequestV4/AWSRequestV4.class.nut"
-@include "github:electricimp/AWSLambda/AWSLambda.agent.lib.nut"
-@include "github:electricimp/OAuth-2.0/OAuth2.agent.lib.nut"
+@include "https://raw.githubusercontent.com/electricimp/AWSRequestV4/master/AWSRequestV4.class.nut"
+@include "https://raw.githubusercontent.com/electricimp/AWSLambda/master/AWSLambda.agent.lib.nut"
+@include "https://raw.githubusercontent.com/electricimp/OAuth-2.0/master/OAuth2.agent.lib.nut"
 
 const GOOGLE_PROJECT_ID="@{GOOGLE_PROJECT_ID}";
 const AWS_LAMBDA_REGION="@{AWS_LAMBDA_REGION}";
@@ -59,6 +59,7 @@ class PullSubscriberTestCase extends ImpTestCase {
         _publisher = GooglePubSub.Publisher(GOOGLE_PROJECT_ID, _oAuthTokenProvider, TOPIC_NAME_1);
         _subscrs = GooglePubSub.Subscriptions(GOOGLE_PROJECT_ID, _oAuthTokenProvider);
         _subscriber = GooglePubSub.PullSubscriber(GOOGLE_PROJECT_ID, _oAuthTokenProvider, SUBSCR_NAME_1);
+        tearDown(); // clean up topics/subscriptions first
         return Promise(function (resolve, reject) {
             _topics.obtain(TOPIC_NAME_1, { "autoCreate" : true }, function (error) {
                 if (error) {
