@@ -47,6 +47,7 @@ class PullSubscriberTestCase extends ImpTestCase {
 
     // Initializes GooglePubSub.Publisher library
     function setUp() {
+        GooglePubSub().setDebug(true);
         _oAuthTokenProvider = OAuth2.JWTProfile.Client(
             OAuth2.DeviceFlow.GOOGLE,
             {
