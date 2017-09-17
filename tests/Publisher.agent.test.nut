@@ -26,7 +26,12 @@
 @include "github:electricimp/AWSLambda/AWSLambda.agent.lib.nut"
 @include "github:electricimp/OAuth-2.0/OAuth2.agent.lib.nut"
 
-@include "keys.nut"
+const GOOGLE_PROJECT_ID="@{GOOGLE_PROJECT_ID}";
+const AWS_LAMBDA_REGION="@{AWS_LAMBDA_REGION}";
+const AWS_ACCESS_KEY_ID="@{AWS_ACCESS_KEY_ID}";
+const AWS_SECRET_ACCESS_KEY="@{AWS_SECRET_ACCESS_KEY}";
+const GOOGLE_ISS="@{GOOGLE_ISS}";
+const GOOGLE_SECRET_KEY="@{GOOGLE_SECRET_KEY}";
 
 const TOPIC_NAME_1 = "imptest_topic_1";
 
