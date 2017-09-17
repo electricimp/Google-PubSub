@@ -53,17 +53,19 @@ class TopicsTestCase extends ImpTestCase {
                 "rs256signer" : AWSLambda(AWS_LAMBDA_REGION, AWS_ACCESS_KEY_ID, AWS_SECRET_ACCESS_KEY)
             });
         _topics = GooglePubSub.Topics(GOOGLE_PROJECT_ID, oAuthTokenProvider);
-        tearDown(); // clean up topics/subscriptions first
-        return Promise(function (resolve, reject) {
-            _topics.obtain(TOPIC_NAME_3, { "autoCreate" : true }, function (error) {
-                if (error) {
-                    return reject(format("topic %s isn't created: %s", TOPIC_NAME_3, error.details));
-                }
-                _topics.obtain(TOPIC_NAME_4, { "autoCreate" : true }, function (error) {
+        // clean up topics/subscriptions first
+        return tearDown().then(function(value) {
+            return Promise(function (resolve, reject) {
+                _topics.obtain(TOPIC_NAME_3, { "autoCreate" : true }, function (error) {
                     if (error) {
-                        return reject(format("topic %s isn't created: %s", TOPIC_NAME_4, error.details));
+                        return reject(format("topic %s isn't created: %s", TOPIC_NAME_3, error.details));
                     }
-                    return resolve("");
+                    _topics.obtain(TOPIC_NAME_4, { "autoCreate" : true }, function (error) {
+                        if (error) {
+                            return reject(format("topic %s isn't created: %s", TOPIC_NAME_4, error.details));
+                        }
+                        return resolve("");
+                    }.bindenv(this));
                 }.bindenv(this));
             }.bindenv(this));
         }.bindenv(this));

@@ -56,22 +56,24 @@ class SubscriptionsTestCase extends ImpTestCase {
             });
         _subscrs = GooglePubSub.Subscriptions(GOOGLE_PROJECT_ID, oAuthTokenProvider);
         _topics = GooglePubSub.Topics(GOOGLE_PROJECT_ID, oAuthTokenProvider);
-        tearDown(); // clean up topics/subscriptions first
-        return Promise(function (resolve, reject) {
-            _topics.obtain(TOPIC_NAME_1, { "autoCreate" : true }, function (error) {
-                if (error) {
-                    return reject(format("topic %s isn't created: %s", TOPIC_NAME_1, error.details));
-                }
-                local config = GooglePubSub.SubscriptionConfig(TOPIC_NAME_1);
-                _subscrs.obtain(SUBSCR_NAME_3, { "autoCreate" : true, "subscrConfig" : config }, function (error, subscrConfig) {
+        // clean up topics/subscriptions first
+        return tearDown().then(function(value) {
+            return Promise(function (resolve, reject) {
+                _topics.obtain(TOPIC_NAME_1, { "autoCreate" : true }, function (error) {
                     if (error) {
-                        return reject(format("subscription %s isn't created: %s", SUBSCR_NAME_3, error.details));
+                        return reject(format("topic %s isn't created: %s", TOPIC_NAME_1, error.details));
                     }
-                    _subscrs.obtain(SUBSCR_NAME_4, { "autoCreate" : true, "subscrConfig" : config }, function (error, subscrConfig) {
+                    local config = GooglePubSub.SubscriptionConfig(TOPIC_NAME_1);
+                    _subscrs.obtain(SUBSCR_NAME_3, { "autoCreate" : true, "subscrConfig" : config }, function (error, subscrConfig) {
                         if (error) {
-                            return reject(format("subscription %s isn't created: %s", SUBSCR_NAME_4, error.details));
+                            return reject(format("subscription %s isn't created: %s", SUBSCR_NAME_3, error.details));
                         }
-                        return resolve("");
+                        _subscrs.obtain(SUBSCR_NAME_4, { "autoCreate" : true, "subscrConfig" : config }, function (error, subscrConfig) {
+                            if (error) {
+                                return reject(format("subscription %s isn't created: %s", SUBSCR_NAME_4, error.details));
+                            }
+                            return resolve("");
+                        }.bindenv(this));
                     }.bindenv(this));
                 }.bindenv(this));
             }.bindenv(this));

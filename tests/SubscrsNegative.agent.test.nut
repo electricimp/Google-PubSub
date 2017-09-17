@@ -53,13 +53,15 @@ class SubscrsNegativeTestCase extends ImpTestCase {
             });
         _subscrs = GooglePubSub.Subscriptions(GOOGLE_PROJECT_ID, oAuthTokenProvider);
         _topics = GooglePubSub.Topics(GOOGLE_PROJECT_ID, oAuthTokenProvider);
-        tearDown(); // clean up topics/subscriptions first
-        return Promise(function (resolve, reject) {
-            _topics.obtain(TOPIC_NAME_1, { "autoCreate" : true }, function (error) {
-                if (error) {
-                    return reject(format("topic %s isn't created: %s", TOPIC_NAME_1, error.details));
-                }
-                return resolve("");
+        // clean up topics/subscriptions first
+        return tearDown().then(function(value) {
+            return Promise(function (resolve, reject) {
+                _topics.obtain(TOPIC_NAME_1, { "autoCreate" : true }, function (error) {
+                    if (error) {
+                        return reject(format("topic %s isn't created: %s", TOPIC_NAME_1, error.details));
+                    }
+                    return resolve("");
+                }.bindenv(this));
             }.bindenv(this));
         }.bindenv(this));
     }
