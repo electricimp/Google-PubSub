@@ -161,6 +161,7 @@ class GooglePubSub {
 
         // Logs an error occurred during the library methods execution
         function _logError(errMessage) {
+            server.log("[GooglePubSub] " + errMessage);
             if (_debug) {
                 server.error("[GooglePubSub] " + errMessage);
             }

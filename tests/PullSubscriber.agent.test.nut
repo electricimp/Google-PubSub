@@ -59,7 +59,6 @@ class PullSubscriberTestCase extends ImpTestCase {
         _publisher = GooglePubSub.Publisher(GOOGLE_PROJECT_ID, _oAuthTokenProvider, TOPIC_NAME_1);
         _subscrs = GooglePubSub.Subscriptions(GOOGLE_PROJECT_ID, _oAuthTokenProvider);
         _subscriber = GooglePubSub.PullSubscriber(GOOGLE_PROJECT_ID, _oAuthTokenProvider, SUBSCR_NAME_1);
-        GooglePubSub().setDebug(true);
         // clean up topics/subscriptions first
         return tearDown().then(function(value) {
             return Promise(function (resolve, reject) {
