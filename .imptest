@@ -6,7 +6,7 @@
     "agentFile": "GooglePubSub.agent.lib.nut",
     "deviceFile": false,
     "stopOnFailure": false,
-    "timeout": 120,
+    "timeout": 180,
     "tests": [
         "*.test.nut",
         "tests/**/*.test.nut"
