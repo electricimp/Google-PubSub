@@ -1,7 +1,7 @@
 {
-    "modelId": "ms_aQrAdQXki"  /* H */,
+    "modelId": "RYfxofJwj4_K"  /* H */,
     "devices": [
-        "233d4b6938a609ee"  /* H */
+        "23522f6938a609ee"  /* H */
     ],
     "agentFile": "GooglePubSub.agent.lib.nut",
     "deviceFile": false,
