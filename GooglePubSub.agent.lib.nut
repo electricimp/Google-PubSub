@@ -1351,7 +1351,6 @@ class GooglePubSub.PullSubscriber {
     function _isStopPull() {
         if (_pullState == _PUB_SUB_PULL_STATE.STOPPING) {
             _pullState = _PUB_SUB_PULL_STATE.STOPPED;
-            GooglePubSub._utils._logDebug("Active pull stopped");
             return true;
         }
         return false;
@@ -1396,7 +1395,6 @@ class GooglePubSub.PullSubscriber {
 
             // re-queue pending pull
             if (!returnImmediately) {
-                GooglePubSub._utils._logDebug("Requeue pending pull");
                 if (GooglePubSub._utils._getTableValue(options, "repeat", false) || !error && messages.len() == 0) {
                     imp.wakeup(0, function () {
                         _pull(options, returnImmediately, returnEmptyMsgs, callback);

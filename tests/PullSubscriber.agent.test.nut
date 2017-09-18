@@ -66,12 +66,12 @@ class PullSubscriberTestCase extends ImpTestCase {
                     if (error) {
                         return reject(format("topic %s isn't created: %s", TOPIC_NAME_1, error.details));
                     }
-//                    local config1 = GooglePubSub.SubscriptionConfig(
-//                        TOPIC_NAME_1, 10, GooglePubSub.PushConfig(_subscrs.getImpAgentEndpoint(null, "12345")));
-//                    _subscrs.obtain(SUBSCR_NAME_2, { "autoCreate" : true, "subscrConfig" : config1 }, function (error, subscrConfig) {
-//                        if (error) {
-//                            return reject(format("subscription %s isn't created: %s", SUBSCR_NAME_2, error.details));
-//                        }
+                    local config1 = GooglePubSub.SubscriptionConfig(
+                        TOPIC_NAME_1, 10, GooglePubSub.PushConfig(_subscrs.getImpAgentEndpoint(null, "12345")));
+                    _subscrs.obtain(SUBSCR_NAME_2, { "autoCreate" : true, "subscrConfig" : config1 }, function (error, subscrConfig) {
+                        if (error) {
+                            return reject(format("subscription %s isn't created: %s", SUBSCR_NAME_2, error.details));
+                        }
                         local config2 = GooglePubSub.SubscriptionConfig(TOPIC_NAME_1);
                         _subscrs.obtain(SUBSCR_NAME_1, { "autoCreate" : true, "subscrConfig" : config2 }, function (error, subscrConfig) {
                             if (error) {
@@ -79,7 +79,7 @@ class PullSubscriberTestCase extends ImpTestCase {
                             }
                             return resolve("");
                         }.bindenv(this));
-//                    }.bindenv(this));
+                    }.bindenv(this));
                 }.bindenv(this));
             }.bindenv(this));
         }.bindenv(this));
@@ -97,7 +97,6 @@ class PullSubscriberTestCase extends ImpTestCase {
         }.bindenv(this));
     }
 
-/*
     // Tests pull() method
     function testPull() {
         return Promise(function (resolve, reject) {
@@ -173,7 +172,6 @@ class PullSubscriberTestCase extends ImpTestCase {
             }.bindenv(this));
         }.bindenv(this));
     }
-*/
 
     // Tests pendingPull() method
     function testPendingPull() {
@@ -200,7 +198,6 @@ class PullSubscriberTestCase extends ImpTestCase {
         }.bindenv(this));
     }
 
-/*
     // Tests repeated pendingPull() method
     function testRepeatedPendingPull() {
         return Promise(function (resolve, reject) {
@@ -245,7 +242,6 @@ class PullSubscriberTestCase extends ImpTestCase {
             publish();
         }.bindenv(this));
     }
-*/
 
     // Tests ack() and modifyAckDeadline() method
     function testAck() {
@@ -310,7 +306,6 @@ class PullSubscriberTestCase extends ImpTestCase {
         }.bindenv(this));
     }
 
-/*
     // Tests stopPull() method
     function testStopPull() {
          return Promise(function (resolve, reject) {
@@ -438,5 +433,4 @@ class PullSubscriberTestCase extends ImpTestCase {
             }.bindenv(this));
         }.bindenv(this));
     }
-*/
 }

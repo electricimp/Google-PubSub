@@ -1,14 +1,14 @@
 {
-    "modelId": "RYfxofJwj4_K"  /* H */,
+    "modelId": "ms_aQrAdQXki"  /* H */,
     "devices": [
-        "23522f6938a609ee"  /* H */
+        "233d4b6938a609ee"  /* H */
     ],
     "agentFile": "GooglePubSub.agent.lib.nut",
     "deviceFile": false,
     "stopOnFailure": false,
     "timeout": 180,
     "tests": [
-        "tests/Publisher.agent.test.nut",
-        "tests/PullSubscriber.agent.test.nut"
+        "*.test.nut",
+        "tests/**/*.test.nut"
     ]
 }
