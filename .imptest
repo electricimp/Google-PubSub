@@ -8,7 +8,6 @@
     "stopOnFailure": false,
     "timeout": 180,
     "tests": [
-        "*.test.nut",
-        "tests/**/*.test.nut"
+        "tests/PullSubscriber.agent.test.nut"
     ]
 }
