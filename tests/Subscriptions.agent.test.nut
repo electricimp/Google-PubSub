@@ -72,7 +72,9 @@ class SubscriptionsTestCase extends ImpTestCase {
                             if (error) {
                                 return reject(format("subscription %s isn't created: %s", SUBSCR_NAME_4, error.details));
                             }
-                            return resolve("");
+                            imp.wakeup(5.0, function() {
+                                return resolve("");
+                            }.bindenv(this));
                         }.bindenv(this));
                     }.bindenv(this));
                 }.bindenv(this));

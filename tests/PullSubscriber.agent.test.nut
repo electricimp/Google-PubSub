@@ -77,7 +77,9 @@ class PullSubscriberTestCase extends ImpTestCase {
                             if (error) {
                                 return reject(format("subscription %s isn't created: %s", SUBSCR_NAME_1, error.details));
                             }
-                            return resolve("");
+                            imp.wakeup(5.0, function() {
+                                return resolve("");
+                            }.bindenv(this));
                         }.bindenv(this));
                     }.bindenv(this));
                 }.bindenv(this));
@@ -258,7 +260,6 @@ class PullSubscriberTestCase extends ImpTestCase {
                     _subscriber.stopPull();
                     return reject("return empty messages");
                 }
-                messagesReceived += messages.len();
                 local ackMessages = null;
                 switch (order) {
                     case 0 :
@@ -281,6 +282,7 @@ class PullSubscriberTestCase extends ImpTestCase {
                         return reject("modifyAckDeadline error: " + error.details);
                     }
                     _subscriber.ack(ackMessages, function (error) {
+                        messagesReceived += messages.len();
                         if (error) {
                             _subscriber.stopPull();
                             return reject("ack error: " + error.details);
