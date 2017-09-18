@@ -35,12 +35,12 @@
 //   - Publisher: creates messages and sends (publishes) them to the messaging service
 //     on a specified topic.
 //   - Subscriber: receives messages on a specified subscription.
-// Communication between publishers and subscribers can be one-to-many, many-to-one, 
+// Communication between publishers and subscribers can be one-to-many, many-to-one,
 // and many-to-many.
 //
 // Pub/Sub Message flow steps:
-// 1. A publisher application creates a topic in the Google Cloud Pub/Sub service and 
-//    sends messages to the topic. A message contains a payload and optional attributes 
+// 1. A publisher application creates a topic in the Google Cloud Pub/Sub service and
+//    sends messages to the topic. A message contains a payload and optional attributes
 //    that describe the payload content.
 // 2. Messages are persisted in a Google Pub/Sub message store until they are delivered
 //    and acknowledged by subscribers.
@@ -104,7 +104,7 @@
 //     tokenReadyCallback(token, error), where
 //         token : string    String representation of access token.
 //         error : string    String with error details, null in case of success.
-//     
+//
 //     Token provider can be an instance of OAuth2.JWTProfile.Client OAuth2 library
 //     (see https://github.com/electricimp/OAuth-2.0)
 //     or any other access token provider with a similar interface.
@@ -113,20 +113,20 @@
 //
 // All requests to Google Cloud Pub/Sub service are made asynchronously.
 // Any method that sends a request has an optional callback parameter.
-// If the callback is provided, it is executed when the operation is completed 
+// If the callback is provided, it is executed when the operation is completed
 // (e.g. a response is received), successfully or not.
 // Details of every callback are described in the corresponding methods.
 
 // GooglePubSub library operation error types
 enum PUB_SUB_ERROR {
-    // the library detects an error, e.g. the library is wrongly initialized or 
-    // a method is called with invalid argument(s). The error details can be 
+    // the library detects an error, e.g. the library is wrongly initialized or
+    // a method is called with invalid argument(s). The error details can be
     // found in the error.details value
     LIBRARY_ERROR,
-    // HTTP request to Google Pub/Sub service failed. The error details can be found in 
+    // HTTP request to Google Pub/Sub service failed. The error details can be found in
     // the error.httpStatus and error.httpResponse properties
     PUB_SUB_REQUEST_FAILED,
-    // Unexpected response from Google Pub/Sub service. The error details can be found in 
+    // Unexpected response from Google Pub/Sub service. The error details can be found in
     // the error.details and error.httpResponse properties
     PUB_SUB_UNEXPECTED_RESPONSE
 };
@@ -161,7 +161,6 @@ class GooglePubSub {
 
         // Logs an error occurred during the library methods execution
         function _logError(errMessage) {
-            server.log("[GooglePubSub] " + errMessage);
             if (_debug) {
                 server.error("[GooglePubSub] " + errMessage);
             }
@@ -169,7 +168,6 @@ class GooglePubSub {
 
         // Logs an debug messages occurred during the library methods execution
         function _logDebug(message) {
-            server.log("[GooglePubSub] " + message);
             if (_debug) {
                 server.log("[GooglePubSub] " + message);
             }
@@ -248,7 +246,7 @@ class GooglePubSub.Error {
 
     // error details (string)
     details = null;
-    
+
     // HTTP status code (integer),
     // null if type is PUB_SUB_ERROR.LIBRARY_ERROR
     httpStatus = null;
@@ -291,7 +289,7 @@ class GooglePubSub.Topics {
     //     projectId : string        Google Cloud Project ID.
     //     oAuthTokenProvider        Provider of access tokens suitable for Google Pub/Sub service requests
     //                               authentication.
-    //                                         
+    //
     // Returns:                      GooglePubSub.Topics instance created
     constructor(projectId, oAuthTokenProvider) {
         _projectId = projectId;
@@ -309,10 +307,10 @@ class GooglePubSub.Topics {
     //     topicName : string        Name of the topic.
     //     options : table           Optional Key/Value settings.
     //         (optional)            The valid keys are:
-    //                                   autoCreate : boolean     Create the topic if it 
+    //                                   autoCreate : boolean     Create the topic if it
     //                                                            does not exist.
     //                                                            Default: false
-    //     callback : function       Optional callback function to be executed once the topic is 
+    //     callback : function       Optional callback function to be executed once the topic is
     //         (optional)            checked or created.
     //                               The callback signature:
     //                               callback(error), where
@@ -359,7 +357,7 @@ class GooglePubSub.Topics {
     // Parameters:
     //     options : table           Optional Key/Value settings.
     //         (optional)            The valid keys are:
-    //                                   paginate : boolean       If true, the method returns limited 
+    //                                   paginate : boolean       If true, the method returns limited
     //                                                            number of topics (up to pageSize)
     //                                                            and pageToken which allows to obtain next
     //                                                            page of data.
@@ -370,8 +368,8 @@ class GooglePubSub.Topics {
     //                                                            If paginate option value is false,
     //                                                            the value is ignored.
     //                                                            Default: 20
-    //                                   pageToken : string       Page token returned by the previous 
-    //                                                            paginated GooglePubSub.Topics.list() call; 
+    //                                   pageToken : string       Page token returned by the previous
+    //                                                            paginated GooglePubSub.Topics.list() call;
     //                                                            indicates that the system should return
     //                                                            the next page of data.
     //                                                            If paginate option value is false,
@@ -385,7 +383,7 @@ class GooglePubSub.Topics {
     //                                     array of string
     //                                   nextOptions : table      Options table that can be used for subsequent
     //                                                            paginated GooglePubSub.Topics.list() call.
-    //                                                            Contains pageToken returned by the current 
+    //                                                            Contains pageToken returned by the current
     //                                                            GooglePubSub.Topics.list() call.
     //                                                            Has null value if:
     //                                                              - no more results are available,
@@ -400,7 +398,7 @@ class GooglePubSub.Topics {
     // Provides Identity and Access Management (IAM) functionality for topics.
     // (see GooglePubSub.IAM class description for details)
     //
-    // Returns:                      An instance of IAM class that can be used for execution of 
+    // Returns:                      An instance of IAM class that can be used for execution of
     //                               IAM methods for a specific topic.
     function iam() {
         return _iam;
@@ -408,7 +406,7 @@ class GooglePubSub.Topics {
 }
 
 // This class provides access to Pub/Sub Subscriptions manipulation methods.
-// It can be used to check existence, create, configure, delete subscriptions of the specified Project 
+// It can be used to check existence, create, configure, delete subscriptions of the specified Project
 // and obtain a list of the subscriptions registered to the Project or related to a topic.
 //
 // Information about Google Pub/Sub subscriptions see here:
@@ -427,7 +425,7 @@ class GooglePubSub.Topics {
 // is out of the library's scope.
 // But it is possible to specify a push endpoint URL which is based on imp Agent URL.
 // Auxiliary GooglePubSub.Subscriptions.getImpAgentEndpoint() method may be used to generate such an URL.
-// In this case GooglePubSub.PushSubscriber class can be utilized to receive messages from the push subscription. 
+// In this case GooglePubSub.PushSubscriber class can be utilized to receive messages from the push subscription.
 //
 class GooglePubSub.Subscriptions {
     _projectId = null;
@@ -441,7 +439,7 @@ class GooglePubSub.Subscriptions {
     //     projectId : string        Google Cloud Project ID.
     //     oAuthTokenProvider        Provider of access tokens suitable for Google Pub/Sub service requests
     //                               authentication.
-    //                                         
+    //
     // Returns:                      GooglePubSub.Subscriptions instance created
     constructor(projectId, oAuthTokenProvider) {
         _projectId = projectId;
@@ -451,7 +449,7 @@ class GooglePubSub.Subscriptions {
     }
 
     // Obtains (get or create) the specified subscription.
-    // If subscription with the specified name exists, the method retrieves it's configuration. 
+    // If subscription with the specified name exists, the method retrieves it's configuration.
     // If it does not exist and optional autoCreate option is true, the subscription is created.
     // In this case subscrConfig option must be specified.
     // If the subscription does not exist and autoCreate option is false, the method fails with
@@ -461,7 +459,7 @@ class GooglePubSub.Subscriptions {
     //     subscrName : string       Name of the subscription.
     //     options : table           Optional Key/Value settings.
     //         (optional)            The valid keys are:
-    //                                 autoCreate : boolean               Create the subscription 
+    //                                 autoCreate : boolean               Create the subscription
     //                                                                    if it does not exist.
     //                                                                    Default: false
     //                                 subscrConfig :                     Configuration of subscription
@@ -479,7 +477,7 @@ class GooglePubSub.Subscriptions {
     //
     // Returns:                      Nothing
     function obtain(subscrName, options = null, callback = null) {
-        local autoCreate = GooglePubSub._utils._getTableValue(options, "autoCreate", false); 
+        local autoCreate = GooglePubSub._utils._getTableValue(options, "autoCreate", false);
         local subscrConfig = GooglePubSub._utils._getTableValue(options, "subscrConfig", null);
         if (autoCreate && !subscrConfig) {
             _invokeObtainCallback(
@@ -516,10 +514,10 @@ class GooglePubSub.Subscriptions {
     // value.
     //
     // Parameters:
-    //     subscrName : string       Name of the subscription. 
+    //     subscrName : string       Name of the subscription.
     //     pushConfig :              The push configuration for future deliveries.
     //       GooglePubSub.PushConfig An empty pushConfig indicates that the Pub/Sub service should stop
-    //                               pushing messages from the given subscription and allow messages 
+    //                               pushing messages from the given subscription and allow messages
     //                               to be pulled and acknowledged.
     //     callback : function       Optional callback function to be executed once the Push Config is modified.
     //         (optional)            The callback signature:
@@ -552,7 +550,7 @@ class GooglePubSub.Subscriptions {
     // All messages retained in the subscription are immediately dropped
     // and cannot be delivered neither by pull, nor by push ways.
     //
-    // After the subscription is deleted, a new one may be created with the same name, but the new one has no 
+    // After the subscription is deleted, a new one may be created with the same name, but the new one has no
     // association with the old subscription or its topic unless the same topic is specified.
     //
     // Parameters:
@@ -578,7 +576,7 @@ class GooglePubSub.Subscriptions {
     //     options : table           Optional Key/Value settings.
     //         (optional)            The valid keys are:
     //                                   topicName : string       Name of the topic to list subscriptions from.
-    //                                   paginate : boolean       If true, the method returns limited 
+    //                                   paginate : boolean       If true, the method returns limited
     //                                                            number of subscriptions (up to pageSize)
     //                                                            and pageToken which allows to obtain next
     //                                                            page of data.
@@ -590,7 +588,7 @@ class GooglePubSub.Subscriptions {
     //                                                            the value is ignored.
     //                                                            Default: 20
     //                                   pageToken : string       Page token returned by the previous paginated
-    //                                                            GooglePubSub.Subscriptions.list() call; 
+    //                                                            GooglePubSub.Subscriptions.list() call;
     //                                                            indicates that the system should return
     //                                                            the next page of data.
     //                                                            If paginate option value is false,
@@ -604,7 +602,7 @@ class GooglePubSub.Subscriptions {
     //                                     array of string
     //                                   nextOptions : table      Options table that can be used for subsequent
     //                                                            paginated GooglePubSub.Subscriptions.list() call.
-    //                                                            Contains pageToken returned by the current 
+    //                                                            Contains pageToken returned by the current
     //                                                            GooglePubSub.Subscriptions.list() call.
     //                                                            Has null value if:
     //                                                              - no more results are available,
@@ -627,7 +625,7 @@ class GooglePubSub.Subscriptions {
     // Provides Identity and Access Management (IAM) functionality for subscriptions.
     // (see GooglePubSub.IAM class description for details)
     //
-    // Returns:                      An instance of IAM class that can be used for execution of 
+    // Returns:                      An instance of IAM class that can be used for execution of
     //                               IAM methods for a specific subscription.
     function iam() {
         return _iam;
@@ -641,7 +639,7 @@ class GooglePubSub.Subscriptions {
     //     relativePath :            Optional relative path from imp Agent URL.
     //         string                If specified, <imp Agent URL>/<relativePath>
     //         (optional)            is returned.
-    //                               If not specified or empty, <imp Agent URL> is 
+    //                               If not specified or empty, <imp Agent URL> is
     //                               returned.
     //     secretToken :             Optional secret token specified by a user.
     //         string                It allows to verify that the messages
@@ -733,7 +731,7 @@ class GooglePubSub.SubscriptionConfig {
         }
         ackDeadlineSeconds = GooglePubSub._utils._getTableValue(
             jsonSubscrConfig, "ackDeadlineSeconds", _GOOGLE_PUB_SUB_ACK_DEADLINE_SECONDS_DEFAULT);
-            
+
         local pushCfg = GooglePubSub._utils._getTableValue(jsonSubscrConfig, "pushConfig", null);
         if (!GooglePubSub._utils._isEmpty(pushCfg)) {
             pushConfig = GooglePubSub.PushConfig(null);
@@ -763,8 +761,8 @@ class GooglePubSub.PushConfig {
     // Parameters:
     //     pushEndpoint : string     Push endpoint URL.
     //     attributes : table        Optional push endpoint attributes.
-    //         (optional)            
-    //                                         
+    //         (optional)
+    //
     // Returns:                      GooglePubSub.PushConfig instance created.
     constructor(pushEndpoint, attributes = null) {
         this.pushEndpoint = pushEndpoint;
@@ -793,7 +791,7 @@ class GooglePubSub.PushConfig {
     }
 }
 
-// Auxiliary class, provides Identity and Access Management (IAM) functionality for individual Pub/Sub 
+// Auxiliary class, provides Identity and Access Management (IAM) functionality for individual Pub/Sub
 // resources (topics and subscriptions).
 // IAM allows you to manage access control by defining who (members) has what access (role) for which
 // resource.
@@ -808,7 +806,7 @@ class GooglePubSub.PushConfig {
 //
 // IAM policy representation is encapsulated in GooglePubSub.IAM.Policy class.
 //
-// For a detailed description of IAM and its features, see the Google Cloud Identity and Access 
+// For a detailed description of IAM and its features, see the Google Cloud Identity and Access
 // Management Documentation: https://cloud.google.com/iam/docs/overview
 //
 class GooglePubSub.IAM {
@@ -867,7 +865,7 @@ class GooglePubSub.IAM {
     }
 
     // Tests a set of permissions for a resource.
-    // If the resource does not exist, this method will return an empty set of permissions, 
+    // If the resource does not exist, this method will return an empty set of permissions,
     // not a PUB_SUB_ERROR.PUB_SUB_REQUEST_FAILED error.
     //
     // Permissions with wildcards such as * or pubsub.topics.* are not allowed.
@@ -980,7 +978,7 @@ class GooglePubSub.IAM.Policy {
         }
         return result;
     }
-    
+
     function _fromJson(jsonPolicy) {
         version = GooglePubSub._utils._getTableValue(jsonPolicy, "version", 0);
         bindings = GooglePubSub._utils._getTableValue(jsonPolicy, "bindings", []);
@@ -1002,7 +1000,7 @@ class GooglePubSub.Publisher {
     //     oAuthTokenProvider        Provider of access tokens suitable for Google Pub/Sub service requests
     //                               authentication.
     //     topicName : string        Name of the topic to publish message to.
-    //                                         
+    //
     // Returns:                      GooglePubSub.Publisher instance created
     constructor(projectId, oAuthTokenProvider, topicName) {
         _projectId = projectId;
@@ -1017,7 +1015,7 @@ class GooglePubSub.Publisher {
     //     message :                 The message(s) to be published. Can be:
     //         any type value          - a raw message value you want to publish,
     //         or array of values      - array of raw message values,
-    //         or Message instance     - instance of GooglePubSub.Message class 
+    //         or Message instance     - instance of GooglePubSub.Message class
     //                                     if you need to provide attributes for the message,
     //         or array of Messages    - array of GooglePubSub.Message instances.
     //     callback : function       Optional callback function to be executed once the messages are published.
@@ -1087,7 +1085,7 @@ enum _PUB_SUB_PULL_STATE {
 //   - pending (waiting) pulling - GooglePubSub.PullSubscriber.pendingPull()
 // Only one pull operation can be active at a time. An attempt to call a new pull operation while
 // another one is active fails with PUB_SUB_ERROR.LIBRARY_ERROR error.
-// Periodic and pending pulls may be canceled by a special function - GooglePubSub.PullSubscriber.stopPull(). 
+// Periodic and pending pulls may be canceled by a special function - GooglePubSub.PullSubscriber.stopPull().
 class GooglePubSub.PullSubscriber {
     _projectId = null;
     _oAuthTokenProvider = null;
@@ -1103,7 +1101,7 @@ class GooglePubSub.PullSubscriber {
     //     oAuthTokenProvider        Provider of access tokens suitable for Google Pub/Sub service requests
     //                               authentication.
     //     subscrName : string       Name of the subscription to receive messages from.
-    //                                         
+    //
     // Returns:                      GooglePubSub.PullSubscriber instance created
     constructor(projectId, oAuthTokenProvider, subscrName) {
         _projectId = projectId;
@@ -1130,7 +1128,7 @@ class GooglePubSub.PullSubscriber {
     //                                                           Default: false
     //                                   maxMessages : integer   The maximum number of messages returned.
     //                                                           The Pub/Sub service may return fewer than
-    //                                                           the number specified even if there are 
+    //                                                           the number specified even if there are
     //                                                           more messages available.
     //                                                           Default: 20
     //     callback : function       Optional callback function to be executed once the messages
@@ -1161,9 +1159,9 @@ class GooglePubSub.PullSubscriber {
     //
     // Parameters:
     //     period : float            Period of checks, in seconds, must be positive float value.
-    //                               The specified period should not be too small, otherwise 
+    //                               The specified period should not be too small, otherwise
     //                               a number of http requests per second will exceed Electric Imp
-    //                               maximum rate limit and further requests will fail with 
+    //                               maximum rate limit and further requests will fail with
     //                               PUB_SUB_ERROR.PUB_SUB_REQUEST_FAILED error.
     //                               For more information about http requests rate limiting see
     //                               https://electricimp.com/docs/api/httprequest/
@@ -1174,7 +1172,7 @@ class GooglePubSub.PullSubscriber {
     //                                                           Default: false
     //                                   maxMessages : integer   The maximum number of messages returned.
     //                                                           The Pub/Sub service may return fewer than
-    //                                                           the number specified even if there are 
+    //                                                           the number specified even if there are
     //                                                           more messages available.
     //                                                           Default: 20
     //     callback : function       Optional callback function to be executed once the messages
@@ -1220,7 +1218,7 @@ class GooglePubSub.PullSubscriber {
     //                                                           Default: false
     //                                   maxMessages : integer   The maximum number of messages returned.
     //                                                           The Pub/Sub system may return fewer than
-    //                                                           the number specified even if there are 
+    //                                                           the number specified even if there are
     //                                                           more messages available.
     //                                                           Default: 20
     //     callback : function       Optional callback function to be executed once the messages
@@ -1240,7 +1238,7 @@ class GooglePubSub.PullSubscriber {
         }
     }
 
-    // Stops periodic or pending pull operation if it was started by 
+    // Stops periodic or pending pull operation if it was started by
     // GooglePubSub.PullSubscriber.periodicPull() or GooglePubSub.PullSubscriber.pendingPull() earlier.
     // Does nothing if no periodic or pending pull operation is active at this moment.
     //
@@ -1260,10 +1258,10 @@ class GooglePubSub.PullSubscriber {
     }
 
     // Acknowledges to the Google Pub/Sub service that the message(s) was received.
-    // Acknowledging a message whose ack deadline has expired may succeed, but such a message may be 
-    // redelivered later. 
+    // Acknowledging a message whose ack deadline has expired may succeed, but such a message may be
+    // redelivered later.
     // Acknowledging a message more than once will not result in an error.
-    // 
+    //
     // Parameters:
     //     message :                 The message(s) being acknowledged. Can be:
     //         GooglePubSub.Message    - GooglePubSub.Message instance,
@@ -1297,7 +1295,7 @@ class GooglePubSub.PullSubscriber {
     // Modifies the ack deadline for a specific message(s).
     // This method is useful to indicate that more time is needed to process a message by the subscriber,
     // or to make the message available for redelivery if the processing was interrupted.
-    // 
+    //
     // Parameters:
     //     message :                 The message(s) whose ack deadline is being modified. Can be:
     //         GooglePubSub.Message    - GooglePubSub.Message instance,
@@ -1447,7 +1445,7 @@ class GooglePubSub.PushSubscriber {
     //     oAuthTokenProvider        Provider of access tokens suitable for Google Pub/Sub service requests
     //                               authentication.
     //     subscrName : string       Name of the subscription to receive messages from.
-    //                                         
+    //
     // Returns:                      GooglePubSub.PushSubscriber instance created
     constructor(projectId, oAuthTokenProvider, subscrName) {
         _projectId = projectId;
@@ -1469,7 +1467,7 @@ class GooglePubSub.PushSubscriber {
     //         function              are received.
     //                               The messagesHandler signature:
     //                               messagesHandler(error, messages), where
-    //                                   error :                  Error details (used in the case when 
+    //                                   error :                  Error details (used in the case when
     //                                     GooglePubSub.Error     the received messages have incorrect format
     //                                                            - PUB_SUB_ERROR.PUB_SUB_UNEXPECTED_RESPONSE
     //                                                            error is reported).
@@ -1562,16 +1560,16 @@ class GooglePubSub.Message {
 
     // Message constructor that can be used for message publishing.
     // The message must contain either a non-empty data field, or at least one attribute.
-    // Otherwise GooglePubSub.Publisher.publish() method will fail with 
+    // Otherwise GooglePubSub.Publisher.publish() method will fail with
     // PUB_SUB_ERROR.LIBRARY_ERROR error.
     //
     // Parameters:
     //     data : any type value     The message data.
     //         (optional)
     //     attributes : table        Optional message attributes.
-    //         (optional)            
-    //                                         
-    // Returns:                      Message object that can be send to Pub/Sub using 
+    //         (optional)
+    //
+    // Returns:                      Message object that can be send to Pub/Sub using
     //                               GooglePubSub.Publisher.publish() method.
     constructor(data = null, attributes = null) {
         this.data = data;
@@ -1593,7 +1591,7 @@ class GooglePubSub.Message {
         }
         return result;
     }
-    
+
     function _fromJson(jsonMessage, checkAckId = true) {
         _error = null;
         local errDetails = null;
@@ -1615,7 +1613,7 @@ class GooglePubSub.Message {
         if (!_error && checkAckId && GooglePubSub._utils._isEmpty(ackId)) {
             errDetails = format("%s: %s", GOOGLE_PUB_SUB_NON_EMPTY_ARG, "ackId");
         }
-        _error = errDetails ? 
+        _error = errDetails ?
             GooglePubSub.Error(PUB_SUB_ERROR.PUB_SUB_UNEXPECTED_RESPONSE, errDetails, jsonMessage) :
             null;
     }
@@ -1650,7 +1648,7 @@ class GooglePubSub._Resource {
     }
 
     function setName(name) {
-        _setResourceName(GooglePubSub._utils._isEmpty(name) ? 
+        _setResourceName(GooglePubSub._utils._isEmpty(name) ?
             null :
             format("%s/%s/%s", _projectName, _resourceType, name));
     }
@@ -1679,7 +1677,7 @@ class GooglePubSub._Resource {
         local autoCreate = GooglePubSub._utils._getTableValue(options, "autoCreate", false);
         local resourceName = _resourceName;
         get(function (error, httpResponse) {
-                if (autoCreate && 
+                if (autoCreate &&
                     error && error.type == PUB_SUB_ERROR.PUB_SUB_REQUEST_FAILED &&
                     error.httpStatus == 404) {
                     _setResourceName(resourceName);
@@ -1699,7 +1697,7 @@ class GooglePubSub._Resource {
     function get(callback, logError = true) {
         _processRequest("GET", _resourceUrl, null, callback, logError);
     }
-    
+
     function remove(callback) {
         _processRequest("DELETE", _resourceUrl, null, callback);
     }
@@ -1711,7 +1709,7 @@ class GooglePubSub._Resource {
     function getIamPolicy(callback) {
         request("GET", ":getIamPolicy", null, callback);
     }
-  
+
     function setIamPolicy(policy, callback) {
         request("POST", ":setIamPolicy", { "policy" : policy }, callback);
     }
@@ -1828,7 +1826,7 @@ class GooglePubSub._Resource {
 
     function _processRequest(method, url, body, callback, logError = true, isPull = false) {
         local error = _initError ||
-            GooglePubSub._utils._validateNonEmptyArg(url, 
+            GooglePubSub._utils._validateNonEmptyArg(url,
                 format("%sName", _resourceType == _GOOGLE_PUB_SUB_TOPICS_TYPE ? "topic" : "subscr"));
         if (error) {
             _invokeCallback(error, null, callback);
@@ -1837,7 +1835,7 @@ class GooglePubSub._Resource {
 
         _oAuthTokenProvider.acquireAccessToken(function (token, error) {
             if (error) {
-                _invokeCallback(GooglePubSub.Error(PUB_SUB_ERROR.LIBRARY_ERROR, 
+                _invokeCallback(GooglePubSub.Error(PUB_SUB_ERROR.LIBRARY_ERROR,
                     format("%s: %s", GOOGLE_PUB_SUB_TOKEN_ACQUISITION_ERROR, error),
                     null, callback));
             }
@@ -1846,9 +1844,9 @@ class GooglePubSub._Resource {
                     "Authorization" : format("Bearer %s", token),
                     "Content-Type" : "application/json"
                 };
-                
+
                 GooglePubSub._utils._logDebug(format("Doing the request: %s %s, body: %s", method, url, http.jsonencode(body)));
-                
+
                 local request = http.request(method, url, headers, body ? http.jsonencode(body) : "");
                 if (isPull) {
                     _currPullRequest = request;
