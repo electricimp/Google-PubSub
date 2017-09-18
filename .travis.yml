@@ -4,4 +4,4 @@ node_js:
 before_script:
 - npm i -g imptest@latest
 script:
-- imptest test :PullSubscriberTestCase.testPendingPull
+- imptest test
