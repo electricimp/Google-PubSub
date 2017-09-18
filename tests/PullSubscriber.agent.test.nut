@@ -97,6 +97,7 @@ class PullSubscriberTestCase extends ImpTestCase {
         }.bindenv(this));
     }
 
+/*
     // Tests pull() method
     function testPull() {
         return Promise(function (resolve, reject) {
@@ -172,6 +173,7 @@ class PullSubscriberTestCase extends ImpTestCase {
             }.bindenv(this));
         }.bindenv(this));
     }
+*/
 
     // Tests pendingPull() method
     function testPendingPull() {
@@ -198,6 +200,7 @@ class PullSubscriberTestCase extends ImpTestCase {
         }.bindenv(this));
     }
 
+/*
     // Tests repeated pendingPull() method
     function testRepeatedPendingPull() {
         return Promise(function (resolve, reject) {
@@ -242,6 +245,7 @@ class PullSubscriberTestCase extends ImpTestCase {
             publish();
         }.bindenv(this));
     }
+*/
 
     // Tests ack() and modifyAckDeadline() method
     function testAck() {
@@ -306,6 +310,7 @@ class PullSubscriberTestCase extends ImpTestCase {
         }.bindenv(this));
     }
 
+/*
     // Tests stopPull() method
     function testStopPull() {
          return Promise(function (resolve, reject) {
@@ -433,4 +438,5 @@ class PullSubscriberTestCase extends ImpTestCase {
             }.bindenv(this));
         }.bindenv(this));
     }
+*/
 }
