@@ -8,6 +8,7 @@
     "stopOnFailure": false,
     "timeout": 180,
     "tests": [
+        "tests/Publisher.agent.test.nut",
         "tests/PullSubscriber.agent.test.nut"
     ]
 }
