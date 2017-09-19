@@ -64,7 +64,9 @@ class TopicsTestCase extends ImpTestCase {
                         if (error) {
                             return reject(format("topic %s isn't created: %s", TOPIC_NAME_4, error.details));
                         }
-                        return resolve("");
+                        imp.wakeup(5.0, function() {
+                            return resolve("");
+                        }.bindenv(this));
                     }.bindenv(this));
                 }.bindenv(this));
             }.bindenv(this));

@@ -1,5 +1,7 @@
 # GooglePubSub
 
+[![Build Status](https://travis-ci.org/electricimp/Google-PubSub.svg?branch=master)](https://travis-ci.org/electricimp/Google-PubSub)
+
 This library lets your agent code connect to [Google’s Cloud Pub/Sub service](https://cloud.google.com/pubsub). It makes use of the [Google Cloud Pub/Sub REST API](https://cloud.google.com/pubsub/docs/reference/rest).
 
 **To add this library to your project, add** `#require "GooglePubSub.agent.lib.nut:1.0.0"` **to the top of your agent code.**
