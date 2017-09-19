@@ -244,6 +244,7 @@ class PullSubscriberTestCase extends ImpTestCase {
     }
 
     // Tests ack() and modifyAckDeadline() method
+/*
     function testAck() {
         return Promise(function (resolve, reject) {
             local msgsNumber = 5;
@@ -305,6 +306,7 @@ class PullSubscriberTestCase extends ImpTestCase {
             }.bindenv(this));
         }.bindenv(this));
     }
+*/
 
     // Tests stopPull() method
     function testStopPull() {
