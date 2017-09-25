@@ -33,11 +33,11 @@ const AWS_SECRET_ACCESS_KEY="@{AWS_SECRET_ACCESS_KEY}";
 const GOOGLE_ISS="@{GOOGLE_ISS}";
 const GOOGLE_SECRET_KEY="@{GOOGLE_SECRET_KEY}";
 
-const TOPIC_NAME_1 = "imptest_topic_1";
-const SUBSCR_NAME_1 = "imptest_subscr_1";
-const SUBSCR_NAME_2 = "imptest_subscr_2";
-const SUBSCR_NAME_3 = "imptest_subscr_3";
-const SUBSCR_NAME_4 = "imptest_subscr_4";
+const TOPIC_NAME_1 = "imptest_subscriptions_topic_1";
+const SUBSCR_NAME_1 = "imptest_subscriptions_subscr_1";
+const SUBSCR_NAME_2 = "imptest_subscriptions_subscr_2";
+const SUBSCR_NAME_3 = "imptest_subscriptions_subscr_3";
+const SUBSCR_NAME_4 = "imptest_subscriptions_subscr_4";
 
 // Test case for GooglePubSub.Subscriptions library
 class SubscriptionsTestCase extends ImpTestCase {
@@ -57,29 +57,39 @@ class SubscriptionsTestCase extends ImpTestCase {
         _subscrs = GooglePubSub.Subscriptions(GOOGLE_PROJECT_ID, oAuthTokenProvider);
         _topics = GooglePubSub.Topics(GOOGLE_PROJECT_ID, oAuthTokenProvider);
         // clean up topics/subscriptions first
-        return tearDown().then(function(value) {
-            return Promise(function (resolve, reject) {
-                _topics.obtain(TOPIC_NAME_1, { "autoCreate" : true }, function (error) {
-                    if (error) {
-                        return reject(format("topic %s isn't created: %s", TOPIC_NAME_1, error.details));
-                    }
-                    local config = GooglePubSub.SubscriptionConfig(TOPIC_NAME_1);
-                    _subscrs.obtain(SUBSCR_NAME_3, { "autoCreate" : true, "subscrConfig" : config }, function (error, subscrConfig) {
+        return tearDown().then(
+            function(value) {
+                return Promise(function (resolve, reject) {
+                    _topics.obtain(TOPIC_NAME_1, { "autoCreate" : true }, function (error) {
                         if (error) {
-                            return reject(format("subscription %s isn't created: %s", SUBSCR_NAME_3, error.details));
+                            return reject(format("topic %s isn't created: %s", TOPIC_NAME_1, error.details));
                         }
-                        _subscrs.obtain(SUBSCR_NAME_4, { "autoCreate" : true, "subscrConfig" : config }, function (error, subscrConfig) {
+                        local config = GooglePubSub.SubscriptionConfig(TOPIC_NAME_1, 10, null);
+                        _subscrs.obtain(SUBSCR_NAME_2, { "autoCreate" : true, "subscrConfig" : config }, function (error, subscrConfig) {
                             if (error) {
-                                return reject(format("subscription %s isn't created: %s", SUBSCR_NAME_4, error.details));
+                                return reject(format("subscription %s isn't created: %s", SUBSCR_NAME_2, error.details));
                             }
-                            imp.wakeup(5.0, function() {
-                                return resolve("");
+                            local config = GooglePubSub.SubscriptionConfig(TOPIC_NAME_1);
+                            _subscrs.obtain(SUBSCR_NAME_3, { "autoCreate" : true, "subscrConfig" : config }, function (error, subscrConfig) {
+                                if (error) {
+                                    return reject(format("subscription %s isn't created: %s", SUBSCR_NAME_3, error.details));
+                                }
+                                _subscrs.obtain(SUBSCR_NAME_4, { "autoCreate" : true, "subscrConfig" : config }, function (error, subscrConfig) {
+                                    if (error) {
+                                        return reject(format("subscription %s isn't created: %s", SUBSCR_NAME_4, error.details));
+                                    }
+                                    imp.wakeup(3.0, function() {
+                                        return resolve("");
+                                    }.bindenv(this));
+                                }.bindenv(this));
                             }.bindenv(this));
                         }.bindenv(this));
                     }.bindenv(this));
                 }.bindenv(this));
+            }.bindenv(this),
+            function(reason) {
+                return reject(reason);
             }.bindenv(this));
-        }.bindenv(this));
     }
 
     function tearDown() {
@@ -89,7 +99,9 @@ class SubscriptionsTestCase extends ImpTestCase {
                     _subscrs.remove(SUBSCR_NAME_3, function (error) {
                         _subscrs.remove(SUBSCR_NAME_4, function (error) {
                             _topics.remove(TOPIC_NAME_1, function (error) {
-                                return resolve("");
+                                imp.wakeup(3.0, function() {
+                                    return resolve("");
+                                }.bindenv(this));
                             }.bindenv(this));
                         }.bindenv(this));
                     }.bindenv(this));
@@ -102,25 +114,27 @@ class SubscriptionsTestCase extends ImpTestCase {
     function testSubscriptionObtain() {
         return Promise(function (resolve, reject) {
             _subscrs.remove(SUBSCR_NAME_1, function (error) {
-                _subscrs.obtain(SUBSCR_NAME_1, null, function (error, subscrConfig) {
-                    if (!error) {
-                        return reject("subscription wrongly obtained");
-                    }
-                    _subscrs.obtain(SUBSCR_NAME_1, { "autoCreate" : false }, function (error, subscrConfig) {
+                imp.wakeup(3.0, function() {
+                    _subscrs.obtain(SUBSCR_NAME_1, null, function (error, subscrConfig) {
                         if (!error) {
                             return reject("subscription wrongly obtained");
                         }
-                        local config = GooglePubSub.SubscriptionConfig(TOPIC_NAME_1, 20, null);
-                        _subscrs.obtain(SUBSCR_NAME_1, { "autoCreate" : true, "subscrConfig" : config }, function (error, subscrConfig) {
-                            if (error) {
-                                return reject(format("subscription %s isn't created: %s", SUBSCR_NAME_1, error.details));
+                        _subscrs.obtain(SUBSCR_NAME_1, { "autoCreate" : false }, function (error, subscrConfig) {
+                            if (!error) {
+                                return reject("subscription wrongly obtained");
                             }
-                            if (config.topicName != subscrConfig.topicName ||
-                                config.ackDeadlineSeconds != subscrConfig.ackDeadlineSeconds ||
-                                config.pushConfig != config.pushConfig) {
-                                return reject("wrong subscription config");
-                            }
-                            return resolve("");
+                            local config = GooglePubSub.SubscriptionConfig(TOPIC_NAME_1, 20, null);
+                            _subscrs.obtain(SUBSCR_NAME_1, { "autoCreate" : true, "subscrConfig" : config }, function (error, subscrConfig) {
+                                if (error) {
+                                    return reject(format("subscription %s isn't created: %s", SUBSCR_NAME_1, error.details));
+                                }
+                                if (config.topicName != subscrConfig.topicName ||
+                                    config.ackDeadlineSeconds != subscrConfig.ackDeadlineSeconds ||
+                                    config.pushConfig != config.pushConfig) {
+                                    return reject("wrong subscription config");
+                                }
+                                return resolve("");
+                            }.bindenv(this));
                         }.bindenv(this));
                     }.bindenv(this));
                 }.bindenv(this));
@@ -193,15 +207,19 @@ class SubscriptionsTestCase extends ImpTestCase {
                 if (error) {
                     return reject(format("subscriptions %s isn't created: %s", SUBSCR_NAME_1, error.details));
                 }
-                _subscrs.remove(SUBSCR_NAME_1, function (error) {
-                    if (error) {
-                        return reject("subscriptions remove failed");
-                    }
+                imp.wakeup(3.0, function() {
                     _subscrs.remove(SUBSCR_NAME_1, function (error) {
-                        if (!error || error.httpStatus != 404) {
-                            return reject("subscriptions remove error");
+                        if (error) {
+                            return reject("subscriptions remove failed");
                         }
-                        return resolve("");
+                        imp.wakeup(3.0, function() {
+                            _subscrs.remove(SUBSCR_NAME_1, function (error) {
+                                if (!error || error.httpStatus != 404) {
+                                    return reject("subscriptions remove error");
+                                }
+                                return resolve("");
+                            }.bindenv(this));
+                        }.bindenv(this));
                     }.bindenv(this));
                 }.bindenv(this));
             }.bindenv(this));
@@ -210,21 +228,15 @@ class SubscriptionsTestCase extends ImpTestCase {
 
     function testModifyPushConfig() {
         return Promise(function (resolve, reject) {
-            local config = GooglePubSub.SubscriptionConfig(TOPIC_NAME_1, 10, null);
-            _subscrs.obtain(SUBSCR_NAME_2, { "autoCreate" : true, "subscrConfig" : config }, function (error, subscrConfig) {
+            _subscrs.modifyPushConfig(SUBSCR_NAME_2, GooglePubSub.PushConfig(_subscrs.getImpAgentEndpoint()), function(error) {
                 if (error) {
-                    return reject(format("subscriptions %s isn't created: %s", SUBSCR_NAME_1, error.details));
+                    return reject(format("push config modification failed: %s", error.details));
                 }
-                _subscrs.modifyPushConfig(SUBSCR_NAME_2, GooglePubSub.PushConfig(_subscrs.getImpAgentEndpoint()), function(error) {
+                _subscrs.modifyPushConfig(SUBSCR_NAME_2, null, function(error) {
                     if (error) {
-                        return reject(format("push config modification failed: %s", error.details));
+                        return reject(format("modification push config to null failed: %s", error.details));
                     }
-                    _subscrs.modifyPushConfig(SUBSCR_NAME_2, null, function(error) {
-                        if (error) {
-                            return reject(format("modification push config to null failed: %s", error.details));
-                        }
-                        return resolve("");
-                    }.bindenv(this));
+                    return resolve("");
                 }.bindenv(this));
             }.bindenv(this));
         }.bindenv(this));
@@ -233,26 +245,20 @@ class SubscriptionsTestCase extends ImpTestCase {
     // Tests Subscriptions.iam methods
     function testIam() {
         return Promise(function (resolve, reject) {
-            local config = GooglePubSub.SubscriptionConfig(TOPIC_NAME_1, 10, null);
-            _subscrs.obtain(SUBSCR_NAME_2, { "autoCreate" : true, "subscrConfig" : config }, function (error, subscrConfig) {
+            _subscrs.iam().getPolicy(SUBSCR_NAME_2, function (error, policy) {
                 if (error) {
-                    return reject(format("subscriptions %s isn't created: %s", SUBSCR_NAME_2, error.details));
+                    return reject(format("getPolicy failed: %s", error.details));
                 }
-                _subscrs.iam().getPolicy(SUBSCR_NAME_2, function (error, policy) {
+                _subscrs.iam().setPolicy(SUBSCR_NAME_2, GooglePubSub.IAM.Policy(0, [], null), function (error, policy) {
                     if (error) {
-                        return reject(format("getPolicy failed: %s", error.details));
+                        return reject(format("setPolicy failed: %s", error.details));
                     }
-                    _subscrs.iam().setPolicy(SUBSCR_NAME_2, GooglePubSub.IAM.Policy(0, [], null), function (error, policy) {
+                    local permissions = ["pubsub.subscriptions.get", "pubsub.subscriptions.delete"];
+                    _subscrs.iam().testPermissions(SUBSCR_NAME_2, permissions, function (error, permissions) {
                         if (error) {
-                            return reject(format("setPolicy failed: %s", error.details));
+                            return reject(format("testPermissions failed: %s", error.details));
                         }
-                        local permissions = ["pubsub.subscriptions.get", "pubsub.subscriptions.delete"];
-                        _subscrs.iam().testPermissions(SUBSCR_NAME_2, permissions, function (error, permissions) {
-                            if (error) {
-                                return reject(format("testPermissions failed: %s", error.details));
-                            }
-                            return resolve("");
-                        }.bindenv(this));
+                        return resolve("");
                     }.bindenv(this));
                 }.bindenv(this));
             }.bindenv(this));

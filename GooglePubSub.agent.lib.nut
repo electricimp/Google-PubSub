@@ -161,7 +161,6 @@ class GooglePubSub {
 
         // Logs an error occurred during the library methods execution
         function _logError(errMessage) {
-            server.log("[GooglePubSub] " + errMessage);
             if (_debug) {
                 server.error("[GooglePubSub] " + errMessage);
             }
@@ -169,7 +168,6 @@ class GooglePubSub {
 
         // Logs an debug messages occurred during the library methods execution
         function _logDebug(message) {
-            server.log("[GooglePubSub] " + message);
             if (_debug) {
                 server.log("[GooglePubSub] " + message);
             }

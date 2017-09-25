@@ -33,16 +33,31 @@ const AWS_SECRET_ACCESS_KEY="@{AWS_SECRET_ACCESS_KEY}";
 const GOOGLE_ISS="@{GOOGLE_ISS}";
 const GOOGLE_SECRET_KEY="@{GOOGLE_SECRET_KEY}";
 
-const TOPIC_NAME_1 = "imptest_topic_1";
-const SUBSCR_NAME_1 = "imptest_subscr_1";
-const SUBSCR_NAME_2 = "imptest_subscr_2";
+const TOPIC_NAME_1 = "imptest_pull_subscriber_topic_1";
+const TOPIC_NAME_2 = "imptest_pull_subscriber_topic_2";
+const TOPIC_NAME_3 = "imptest_pull_subscriber_topic_3";
+const TOPIC_NAME_4 = "imptest_pull_subscriber_topic_4";
+const TOPIC_NAME_5 = "imptest_pull_subscriber_topic_5";
+const SUBSCR_NAME_1 = "imptest_pull_subscriber_subscr_1";
+const SUBSCR_NAME_2 = "imptest_pull_subscriber_subscr_2";
+const SUBSCR_NAME_3 = "imptest_pull_subscriber_subscr_3";
+const SUBSCR_NAME_4 = "imptest_pull_subscriber_subscr_4";
+const SUBSCR_NAME_5 = "imptest_pull_subscriber_subscr_5";
 
 // Test case for GooglePubSub.PullSubscriber library
 class PullSubscriberTestCase extends ImpTestCase {
     _topics = null;
     _publisher = null;
+    _publisher2 = null;
+    _publisher3 = null;
+    _publisher4 = null;
+    _publisher5 = null;
     _subscrs = null;
     _subscriber = null;
+    _subscriber2 = null;
+    _subscriber3 = null;
+    _subscriber4 = null;
+    _subscriber5 = null;
     _oAuthTokenProvider = null;
 
     // Initializes GooglePubSub.Publisher library
@@ -56,28 +71,84 @@ class PullSubscriberTestCase extends ImpTestCase {
                 "rs256signer" : AWSLambda(AWS_LAMBDA_REGION, AWS_ACCESS_KEY_ID, AWS_SECRET_ACCESS_KEY)
             });
         _topics = GooglePubSub.Topics(GOOGLE_PROJECT_ID, _oAuthTokenProvider);
-        _publisher = GooglePubSub.Publisher(GOOGLE_PROJECT_ID, _oAuthTokenProvider, TOPIC_NAME_1);
         _subscrs = GooglePubSub.Subscriptions(GOOGLE_PROJECT_ID, _oAuthTokenProvider);
+        _publisher = GooglePubSub.Publisher(GOOGLE_PROJECT_ID, _oAuthTokenProvider, TOPIC_NAME_1);
+        _publisher2 = GooglePubSub.Publisher(GOOGLE_PROJECT_ID, _oAuthTokenProvider, TOPIC_NAME_2);
+        _publisher3 = GooglePubSub.Publisher(GOOGLE_PROJECT_ID, _oAuthTokenProvider, TOPIC_NAME_3);
+        _publisher4 = GooglePubSub.Publisher(GOOGLE_PROJECT_ID, _oAuthTokenProvider, TOPIC_NAME_4);
+        _publisher5 = GooglePubSub.Publisher(GOOGLE_PROJECT_ID, _oAuthTokenProvider, TOPIC_NAME_5);
         _subscriber = GooglePubSub.PullSubscriber(GOOGLE_PROJECT_ID, _oAuthTokenProvider, SUBSCR_NAME_1);
+        _subscriber2 = GooglePubSub.PullSubscriber(GOOGLE_PROJECT_ID, _oAuthTokenProvider, SUBSCR_NAME_2);
+        _subscriber3 = GooglePubSub.PullSubscriber(GOOGLE_PROJECT_ID, _oAuthTokenProvider, SUBSCR_NAME_3);
+        _subscriber4 = GooglePubSub.PullSubscriber(GOOGLE_PROJECT_ID, _oAuthTokenProvider, SUBSCR_NAME_4);
+        _subscriber5 = GooglePubSub.PullSubscriber(GOOGLE_PROJECT_ID, _oAuthTokenProvider, SUBSCR_NAME_5);
         // clean up topics/subscriptions first
-        return tearDown().then(function(value) {
-            return Promise(function (resolve, reject) {
-                _topics.obtain(TOPIC_NAME_1, { "autoCreate" : true }, function (error) {
+        return tearDown().
+            then(function(value) {
+                    return _createTopicAndSubscription(TOPIC_NAME_1, SUBSCR_NAME_1);
+                }.bindenv(this)).
+            then(function(value) {
+                    return _createTopicAndSubscription(TOPIC_NAME_2, SUBSCR_NAME_2); 
+                }.bindenv(this)).
+            then(function(value) {
+                    return _createTopicAndSubscription(TOPIC_NAME_3, SUBSCR_NAME_3);
+                }.bindenv(this)).
+            then(function(value) {
+                    return _createTopicAndSubscription(TOPIC_NAME_4, SUBSCR_NAME_4);
+                }.bindenv(this)).
+            then(function(value) {
+                    return _createTopicAndSubscription(TOPIC_NAME_5, SUBSCR_NAME_5);
+                }.bindenv(this)).
+            then(function(value) {
+                    imp.wakeup(3.0, function() {
+                        return Promise.resolve("");
+                    }.bindenv(this));
+                }.bindenv(this)).
+            fail(function(reason) {
+                    return Promise.reject(reason);
+                }.bindenv(this));
+    }
+
+    function _createTopicAndSubscription(topicName, subscrName) {
+        return Promise(function (resolve, reject) {
+            _topics.obtain(topicName, { "autoCreate" : true }, function (error) {
+                if (error) {
+                    return reject(format("topic %s isn't created: %s", topicName, error.details));
+                }
+                local config = GooglePubSub.SubscriptionConfig(topicName);
+                _subscrs.obtain(subscrName, { "autoCreate" : true, "subscrConfig" : config }, function (error, subscrConfig) {
                     if (error) {
-                        return reject(format("topic %s isn't created: %s", TOPIC_NAME_1, error.details));
+                        return reject(format("subscription %s isn't created: %s", subscrName, error.details));
                     }
-                    local config1 = GooglePubSub.SubscriptionConfig(
-                        TOPIC_NAME_1, 10, GooglePubSub.PushConfig(_subscrs.getImpAgentEndpoint(null, "12345")));
-                    _subscrs.obtain(SUBSCR_NAME_2, { "autoCreate" : true, "subscrConfig" : config1 }, function (error, subscrConfig) {
-                        if (error) {
-                            return reject(format("subscription %s isn't created: %s", SUBSCR_NAME_2, error.details));
-                        }
-                        local config2 = GooglePubSub.SubscriptionConfig(TOPIC_NAME_1);
-                        _subscrs.obtain(SUBSCR_NAME_1, { "autoCreate" : true, "subscrConfig" : config2 }, function (error, subscrConfig) {
-                            if (error) {
-                                return reject(format("subscription %s isn't created: %s", SUBSCR_NAME_1, error.details));
-                            }
-                            imp.wakeup(5.0, function() {
+                    return resolve("");
+                }.bindenv(this));
+            }.bindenv(this));
+        }.bindenv(this));
+    }
+
+    function tearDown() {
+        return _removeSubscrs().
+            then(function(value) {
+                    return _removeTopics();
+                }.bindenv(this)).
+            then(function(value) {
+                    imp.wakeup(3.0, function() {
+                        return Promise.resolve("");
+                    }.bindenv(this));
+                }.bindenv(this)).
+            fail(function(reason) {
+                    return Promise.reject(reason);
+                }.bindenv(this)
+            );
+    }
+
+    function _removeTopics() {
+        return Promise(function (resolve, reject) {
+            _topics.remove(TOPIC_NAME_1, function (error) {
+                _topics.remove(TOPIC_NAME_2, function (error) {
+                    _topics.remove(TOPIC_NAME_3, function (error) {
+                        _topics.remove(TOPIC_NAME_4, function (error) {
+                            _topics.remove(TOPIC_NAME_5, function (error) {
                                 return resolve("");
                             }.bindenv(this));
                         }.bindenv(this));
@@ -87,12 +158,16 @@ class PullSubscriberTestCase extends ImpTestCase {
         }.bindenv(this));
     }
 
-    function tearDown() {
+    function _removeSubscrs() {
         return Promise(function (resolve, reject) {
             _subscrs.remove(SUBSCR_NAME_1, function (error) {
                 _subscrs.remove(SUBSCR_NAME_2, function (error) {
-                    _topics.remove(TOPIC_NAME_1, function (error) {
-                        return resolve("");
+                    _subscrs.remove(SUBSCR_NAME_3, function (error) {
+                        _subscrs.remove(SUBSCR_NAME_4, function (error) {
+                            _subscrs.remove(SUBSCR_NAME_5, function (error) {
+                                return resolve("");
+                            }.bindenv(this));
+                        }.bindenv(this));
                     }.bindenv(this));
                 }.bindenv(this));
             }.bindenv(this));
@@ -144,30 +219,30 @@ class PullSubscriberTestCase extends ImpTestCase {
         return Promise(function (resolve, reject) {
             local msgsNumber = 10;
             local messagesReceived = 0;
-            _subscriber.periodicPull(2.0, { "autoAck" : true, "maxMessages" : 3 }, function (error, messages) {
+            _subscriber2.periodicPull(2.0, { "autoAck" : true, "maxMessages" : 3 }, function (error, messages) {
                 if (error) {
-                    _subscriber.stopPull();
+                    _subscriber2.stopPull();
                     return reject("pull error: " + error.details);
                 }
                 if (messages.len() == 0) {
-                    _subscriber.stopPull();
+                    _subscriber2.stopPull();
                     return reject("return empty messages");
                 }
                 messagesReceived += messages.len();
                 if (messagesReceived == msgsNumber) {
-                    _subscriber.stopPull();
+                    _subscriber2.stopPull();
                     return resolve("");
                 }
                 else if (messagesReceived > msgsNumber) {
-                    _subscriber.stopPull();
+                    _subscriber2.stopPull();
                     return reject("wrong number of messages");
                 }
             }.bindenv(this));
 
             imp.wakeup(10.0, function() {
-                _publisher.publish(array(msgsNumber, "test"), function (error, messageIds) {
+                _publisher2.publish(array(msgsNumber, "test"), function (error, messageIds) {
                     if (error) {
-                        _subscriber.stopPull();
+                        _subscriber2.stopPull();
                         return reject("publish error: " + error.details);
                     }
                 }.bindenv(this));
@@ -178,7 +253,7 @@ class PullSubscriberTestCase extends ImpTestCase {
     // Tests pendingPull() method
     function testPendingPull() {
         return Promise(function (resolve, reject) {
-            _subscriber.pendingPull({ "autoAck" : true, "maxMessages" : 20 }, function (error, messages) {
+            _subscriber3.pendingPull({ "autoAck" : true, "maxMessages" : 20 }, function (error, messages) {
                 if (error) {
                     return reject("pull error: " + error.details);
                 }
@@ -191,7 +266,7 @@ class PullSubscriberTestCase extends ImpTestCase {
             }.bindenv(this));
             // this huge value is needed to check that pending pull is restored after timeout
             imp.wakeup(100.0, function() {
-                _publisher.publish("test", function (error, messageIds) {
+                _publisher3.publish("test", function (error, messageIds) {
                     if (error) {
                         return reject("publish error: " + error.details);
                     }
@@ -206,22 +281,22 @@ class PullSubscriberTestCase extends ImpTestCase {
             local msgsNumber = 10;
             local messagesReceived = 0;
             local pendingPull;
-            _subscriber.pendingPull({ "repeat" : true, "autoAck" : true, "maxMessages" : 1 }, function (error, messages) {
+            _subscriber4.pendingPull({ "repeat" : true, "autoAck" : true, "maxMessages" : 1 }, function (error, messages) {
                 if (error) {
-                    _subscriber.stopPull();
+                    _subscriber4.stopPull();
                     return reject("pull error: " + error.details);
                 }
                 if (messages.len() == 0) {
-                    _subscriber.stopPull();
+                    _subscriber4.stopPull();
                     return reject("return empty messages");
                 }
                 messagesReceived += messages.len();
                 if (messagesReceived == msgsNumber) {
-                    _subscriber.stopPull();
+                    _subscriber4.stopPull();
                     return resolve("");
                 }
                 else if (messagesReceived > msgsNumber) {
-                    _subscriber.stopPull();
+                    _subscriber4.stopPull();
                     return reject("wrong number of messages");
                 }
             }.bindenv(this));
@@ -229,9 +304,9 @@ class PullSubscriberTestCase extends ImpTestCase {
             local messagesSent = 0;
             local publish;
             publish = function () {
-                _publisher.publish("test", function (error, messageIds) {
+                _publisher4.publish("test", function (error, messageIds) {
                     if (error) {
-                        _subscriber.stopPull();
+                        _subscriber4.stopPull();
                         return reject("publish error: " + error.details);
                     }
                     messagesSent++;
@@ -246,19 +321,18 @@ class PullSubscriberTestCase extends ImpTestCase {
     }
 
     // Tests ack() and modifyAckDeadline() method
-/*
     function testAck() {
         return Promise(function (resolve, reject) {
             local msgsNumber = 5;
             local messagesReceived = 0;
             local order = 0;
-            _subscriber.periodicPull(2.0, { "autoAck" : false, "maxMessages" : 1 }, function (error, messages) {
+            _subscriber5.periodicPull(2.0, { "autoAck" : false, "maxMessages" : 1 }, function (error, messages) {
                 if (error) {
-                    _subscriber.stopPull();
+                    _subscriber5.stopPull();
                     return reject("pull error: " + error.details);
                 }
                 if (messages.len() == 0) {
-                    _subscriber.stopPull();
+                    _subscriber5.stopPull();
                     return reject("return empty messages");
                 }
                 local ackMessages = null;
@@ -277,38 +351,37 @@ class PullSubscriberTestCase extends ImpTestCase {
                         break;
                 }
                 order++;
-                _subscriber.modifyAckDeadline(ackMessages, 15, function (error) {
+                _subscriber5.modifyAckDeadline(ackMessages, 15, function (error) {
                     if (error) {
-                        _subscriber.stopPull();
+                        _subscriber5.stopPull();
                         return reject("modifyAckDeadline error: " + error.details);
                     }
-                    _subscriber.ack(ackMessages, function (error) {
+                    _subscriber5.ack(ackMessages, function (error) {
                         messagesReceived += messages.len();
                         if (error) {
-                            _subscriber.stopPull();
+                            _subscriber5.stopPull();
                             return reject("ack error: " + error.details);
                         }
                         if (messagesReceived == msgsNumber) {
-                            _subscriber.stopPull();
+                            _subscriber5.stopPull();
                             return resolve("");
                         }
                         else if (messagesReceived > msgsNumber) {
-                            _subscriber.stopPull();
+                            _subscriber5.stopPull();
                             return reject("wrong number of messages");
                         }
                     }.bindenv(this));
                 }.bindenv(this));
             }.bindenv(this));
 
-            _publisher.publish(array(msgsNumber, "test"), function (error, messageIds) {
+            _publisher5.publish(array(msgsNumber, "test"), function (error, messageIds) {
                 if (error) {
-                    _subscriber.stopPull();
+                    _subscriber5.stopPull();
                     return reject("publish error: " + error.details);
                 }
             }.bindenv(this));
         }.bindenv(this));
     }
-*/
 
     // Tests stopPull() method
     function testStopPull() {
@@ -320,27 +393,31 @@ class PullSubscriberTestCase extends ImpTestCase {
                     _subscriber.stopPull();
                     return reject("second active pull accepted");
                 }
-                imp.wakeup(5, function () {
+                imp.wakeup(2.0, function () {
                     _subscriber.stopPull();
-                    _subscriber.pull(null, function (error, messages) {
-                        if (error) {
-                            return reject("stopPull failed");
-                        }
-                        _subscriber.pendingPull({"repeat" : true}, function (error, messages) {});
-                        imp.wakeup(5, function () {
-                            _subscriber.periodicPull(2.0, null, function (error, messages) {
-                                if (!_isLibraryError(error)) {
-                                    _subscriber.stopPull();
-                                    return reject("second active pull with pending accepted");
-                                }
-                                imp.wakeup(5, function () {
-                                    _subscriber.stopPull();
-                                    _subscriber.pull(null, function (error, messages) {
-                                        if (error) {
-                                            return reject("pending stopPull failed");
-                                        }
+                    imp.wakeup(2.0, function () {
+                        _subscriber.pull(null, function (error, messages) {
+                            if (error) {
+                                return reject("stopPull failed");
+                            }
+                            _subscriber.pendingPull({"repeat" : true}, function (error, messages) {});
+                            imp.wakeup(2.0, function () {
+                                _subscriber.periodicPull(2.0, null, function (error, messages) {
+                                    if (!_isLibraryError(error)) {
                                         _subscriber.stopPull();
-                                        return resolve("");
+                                        return reject("second active pull with pending accepted");
+                                    }
+                                    imp.wakeup(2.0, function () {
+                                        _subscriber.stopPull();
+                                        imp.wakeup(2.0, function () {
+                                            _subscriber.pull(null, function (error, messages) {
+                                                if (error) {
+                                                    return reject("pending stopPull failed");
+                                                }
+                                                _subscriber.stopPull();
+                                                return resolve("");
+                                            }.bindenv(this));
+                                        }.bindenv(this));
                                     }.bindenv(this));
                                 }.bindenv(this));
                             }.bindenv(this));
