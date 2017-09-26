@@ -33,8 +33,8 @@ const AWS_SECRET_ACCESS_KEY="@{AWS_SECRET_ACCESS_KEY}";
 const GOOGLE_ISS="@{GOOGLE_ISS}";
 const GOOGLE_SECRET_KEY="@{GOOGLE_SECRET_KEY}";
 
-const TOPIC_NAME_1 = "imptest_topic_1";
-const SUBSCR_NAME_1 = "imptest_subscr_1";
+const TOPIC_NAME_1 = "imptest_subscrs_negative_topic_1";
+const SUBSCR_NAME_1 = "imptest_subscrs_negative_subscr_1";
 
 // Test case for GooglePubSub.Subscriptions library
 class SubscrsNegativeTestCase extends ImpTestCase {
@@ -54,25 +54,31 @@ class SubscrsNegativeTestCase extends ImpTestCase {
         _subscrs = GooglePubSub.Subscriptions(GOOGLE_PROJECT_ID, oAuthTokenProvider);
         _topics = GooglePubSub.Topics(GOOGLE_PROJECT_ID, oAuthTokenProvider);
         // clean up topics/subscriptions first
-        return tearDown().then(function(value) {
-            return Promise(function (resolve, reject) {
-                _topics.obtain(TOPIC_NAME_1, { "autoCreate" : true }, function (error) {
-                    if (error) {
-                        return reject(format("topic %s isn't created: %s", TOPIC_NAME_1, error.details));
-                    }
-                    imp.wakeup(5.0, function() {
-                        return resolve("");
+        return tearDown().then(
+            function(value) {
+                return Promise(function (resolve, reject) {
+                    _topics.obtain(TOPIC_NAME_1, { "autoCreate" : true }, function (error) {
+                        if (error) {
+                            return reject(format("topic %s isn't created: %s", TOPIC_NAME_1, error.details));
+                        }
+                        imp.wakeup(3.0, function() {
+                            return resolve("");
+                        }.bindenv(this));
                     }.bindenv(this));
                 }.bindenv(this));
+            }.bindenv(this),
+            function(reason) {
+                return reject(reason);
             }.bindenv(this));
-        }.bindenv(this));
     }
 
     function tearDown() {
         return Promise(function (resolve, reject) {
             _subscrs.remove(SUBSCR_NAME_1, function (error) {
                 _topics.remove(TOPIC_NAME_1, function (error) {
-                    return resolve("");
+                    imp.wakeup(3.0, function() {
+                        return resolve("");
+                    }.bindenv(this));
                 }.bindenv(this));
             }.bindenv(this));
         }.bindenv(this));
