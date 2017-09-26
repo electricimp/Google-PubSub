@@ -310,13 +310,14 @@ class PullSubscriberTestCase extends ImpTestCase {
                         return reject("publish error: " + error.details);
                     }
                     messagesSent++;
+                    if (messagesSent < msgsNumber) {
+                        imp.wakeup(5.0, publish);
+                    }
                 }.bindenv(this));
-
-                if (messagesSent < msgsNumber) {
-                    imp.wakeup(5.0, publish);
-                }
             }.bindenv(this);
-            publish();
+            imp.wakeup(5.0, function() {
+                publish();
+            }.bindenv(this));
         }.bindenv(this));
     }
 
@@ -374,11 +375,13 @@ class PullSubscriberTestCase extends ImpTestCase {
                 }.bindenv(this));
             }.bindenv(this));
 
-            _publisher5.publish(array(msgsNumber, "test"), function (error, messageIds) {
-                if (error) {
-                    _subscriber5.stopPull();
-                    return reject("publish error: " + error.details);
-                }
+            imp.wakeup(5.0, function() {
+                _publisher5.publish(array(msgsNumber, "test"), function (error, messageIds) {
+                    if (error) {
+                        _subscriber5.stopPull();
+                        return reject("publish error: " + error.details);
+                    }
+                }.bindenv(this));
             }.bindenv(this));
         }.bindenv(this));
     }
