@@ -70,7 +70,7 @@ class PublisherTestCase extends ImpTestCase {
                 return reject(reason);
             }.bindenv(this));
     }
-
+    
     function tearDown() {
         return Promise(function (resolve, reject) {
             _topics.remove(TOPIC_NAME_1, function (error) {
