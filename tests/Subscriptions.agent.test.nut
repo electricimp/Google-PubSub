@@ -22,99 +22,74 @@
 // ARISING FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR
 // OTHER DEALINGS IN THE SOFTWARE.
 
-@include "https://raw.githubusercontent.com/electricimp/AWSRequestV4/master/AWSRequestV4.class.nut"
-@include "https://raw.githubusercontent.com/electricimp/AWSLambda/master/AWSLambda.agent.lib.nut"
-@include "https://raw.githubusercontent.com/electricimp/OAuth-2.0/master/OAuth2.agent.lib.nut"
-
-const GOOGLE_PROJECT_ID="@{GOOGLE_PROJECT_ID}";
-const AWS_LAMBDA_REGION="@{AWS_LAMBDA_REGION}";
-const AWS_ACCESS_KEY_ID="@{AWS_ACCESS_KEY_ID}";
-const AWS_SECRET_ACCESS_KEY="@{AWS_SECRET_ACCESS_KEY}";
-const GOOGLE_ISS="@{GOOGLE_ISS}";
-const GOOGLE_SECRET_KEY="@{GOOGLE_SECRET_KEY}";
+@include "./tests/CommonTest.nut"
 
 const TOPIC_NAME_1 = "imptest_subscriptions_topic_1";
 const SUBSCR_NAME_1 = "imptest_subscriptions_subscr_1";
 const SUBSCR_NAME_2 = "imptest_subscriptions_subscr_2";
 const SUBSCR_NAME_3 = "imptest_subscriptions_subscr_3";
 const SUBSCR_NAME_4 = "imptest_subscriptions_subscr_4";
+const SUBSCR_NAME_5 = "imptest_subscriptions_subscr_5";
 
 // Test case for GooglePubSub.Subscriptions library
-class SubscriptionsTestCase extends ImpTestCase {
-    _topics = null;
-    _subscrs = null;
+class SubscriptionsTestCase extends CommonTest {
 
     // Initializes GooglePubSub.Subscriptions library
     function setUp() {
-        local oAuthTokenProvider = OAuth2.JWTProfile.Client(
-            OAuth2.DeviceFlow.GOOGLE,
-            {
-                "iss"         : GOOGLE_ISS,
-                "jwtSignKey"  : GOOGLE_SECRET_KEY,
-                "scope"       : "https://www.googleapis.com/auth/pubsub",
-                "rs256signer" : AWSLambda(AWS_LAMBDA_REGION, AWS_ACCESS_KEY_ID, AWS_SECRET_ACCESS_KEY)
-            });
-        _subscrs = GooglePubSub.Subscriptions(GOOGLE_PROJECT_ID, oAuthTokenProvider);
-        _topics = GooglePubSub.Topics(GOOGLE_PROJECT_ID, oAuthTokenProvider);
+        _setUp();
+        _subscrs = GooglePubSub.Subscriptions(GOOGLE_PROJECT_ID, _oAuthTokenProvider);
+        _topics = GooglePubSub.Topics(GOOGLE_PROJECT_ID, _oAuthTokenProvider);
         // clean up topics/subscriptions first
-        return tearDown().then(
-            function(value) {
-                return Promise(function (resolve, reject) {
-                    _topics.obtain(TOPIC_NAME_1, { "autoCreate" : true }, function (error) {
-                        if (error) {
-                            return reject(format("topic %s isn't created: %s", TOPIC_NAME_1, error.details));
-                        }
-                        local config = GooglePubSub.SubscriptionConfig(TOPIC_NAME_1, 10, null);
-                        _subscrs.obtain(SUBSCR_NAME_2, { "autoCreate" : true, "subscrConfig" : config }, function (error, subscrConfig) {
-                            if (error) {
-                                return reject(format("subscription %s isn't created: %s", SUBSCR_NAME_2, error.details));
-                            }
-                            local config = GooglePubSub.SubscriptionConfig(TOPIC_NAME_1);
-                            _subscrs.obtain(SUBSCR_NAME_3, { "autoCreate" : true, "subscrConfig" : config }, function (error, subscrConfig) {
-                                if (error) {
-                                    return reject(format("subscription %s isn't created: %s", SUBSCR_NAME_3, error.details));
-                                }
-                                _subscrs.obtain(SUBSCR_NAME_4, { "autoCreate" : true, "subscrConfig" : config }, function (error, subscrConfig) {
-                                    if (error) {
-                                        return reject(format("subscription %s isn't created: %s", SUBSCR_NAME_4, error.details));
-                                    }
-                                    imp.wakeup(3.0, function() {
-                                        return resolve("");
-                                    }.bindenv(this));
-                                }.bindenv(this));
-                            }.bindenv(this));
-                        }.bindenv(this));
-                    }.bindenv(this));
-                }.bindenv(this));
-            }.bindenv(this),
-            function(reason) {
-                return reject(reason);
+        return tearDown()
+            .then(function (value) {
+                return _createTopic(TOPIC_NAME_1);
+            }.bindenv(this))
+            .then(function (value) {
+                local config = GooglePubSub.SubscriptionConfig(TOPIC_NAME_1, 10, null);
+                return _createSubscription(SUBSCR_NAME_2, { "autoCreate" : true, "subscrConfig" : config });
+            }.bindenv(this))
+            .then(function (value) {
+                local config = GooglePubSub.SubscriptionConfig(TOPIC_NAME_1);
+                return _createSubscription(SUBSCR_NAME_3, { "autoCreate" : true, "subscrConfig" : config });
+            }.bindenv(this))
+            .then(function (value) {
+                return _createSubscription(SUBSCR_NAME_4, { "autoCreate" : true, "subscrConfig" : GooglePubSub.SubscriptionConfig(TOPIC_NAME_1) });
+            }.bindenv(this))
+            .then(function (value) {
+                return _pubSubTimeout();
+            }.bindenv(this))
+            .fail(function (reason) {
+                return Promise.reject(reason);
             }.bindenv(this));
     }
 
     function tearDown() {
-        return Promise(function (resolve, reject) {
-            _subscrs.remove(SUBSCR_NAME_1, function (error) {
-                _subscrs.remove(SUBSCR_NAME_2, function (error) {
-                    _subscrs.remove(SUBSCR_NAME_3, function (error) {
-                        _subscrs.remove(SUBSCR_NAME_4, function (error) {
-                            _topics.remove(TOPIC_NAME_1, function (error) {
-                                imp.wakeup(3.0, function() {
-                                    return resolve("");
-                                }.bindenv(this));
-                            }.bindenv(this));
-                        }.bindenv(this));
-                    }.bindenv(this));
-                }.bindenv(this));
+        return Promise.all([
+                _removeSubscription(SUBSCR_NAME_1),
+                _removeSubscription(SUBSCR_NAME_2),
+                _removeSubscription(SUBSCR_NAME_3),
+                _removeSubscription(SUBSCR_NAME_4),
+                _removeSubscription(SUBSCR_NAME_5)
+            ])
+            .then(function (value) {
+                return _removeTopic(TOPIC_NAME_1);
+            }.bindenv(this))
+            .then(function (value) {
+                return _pubSubTimeout();
+            }.bindenv(this))
+            .fail(function (reason) {
+                return Promise.reject(reason);
             }.bindenv(this));
-        }.bindenv(this));
     }
 
     // Tests Subscriptions.obtain
     function testSubscriptionObtain() {
-        return Promise(function (resolve, reject) {
-            _subscrs.remove(SUBSCR_NAME_1, function (error) {
-                imp.wakeup(3.0, function() {
+        return _removeSubscription(SUBSCR_NAME_1)
+            .then(function (value) {
+                return _pubSubTimeout();
+            }.bindenv(this))
+            .then(function (value) {
+                return Promise(function (resolve, reject) {
                     _subscrs.obtain(SUBSCR_NAME_1, null, function (error, subscrConfig) {
                         if (!error) {
                             return reject("subscription wrongly obtained");
@@ -138,8 +113,10 @@ class SubscriptionsTestCase extends ImpTestCase {
                         }.bindenv(this));
                     }.bindenv(this));
                 }.bindenv(this));
+            }.bindenv(this))
+            .fail(function (reason) {
+                return Promise.reject(reason);
             }.bindenv(this));
-        }.bindenv(this));
     }
 
     function _subscrListTest(topicName = null) {
@@ -201,29 +178,30 @@ class SubscriptionsTestCase extends ImpTestCase {
 
     // Tests Subscriptions.remove
     function testSubscriptionRemove() {
-        return Promise(function (resolve, reject) {
-            local config = GooglePubSub.SubscriptionConfig(TOPIC_NAME_1, 10, null);
-            _subscrs.obtain(SUBSCR_NAME_1, { "autoCreate" : true, "subscrConfig" : config }, function (error, subscrConfig) {
-                if (error) {
-                    return reject(format("subscriptions %s isn't created: %s", SUBSCR_NAME_1, error.details));
-                }
-                imp.wakeup(3.0, function() {
-                    _subscrs.remove(SUBSCR_NAME_1, function (error) {
-                        if (error) {
-                            return reject("subscriptions remove failed");
+        local config = GooglePubSub.SubscriptionConfig(TOPIC_NAME_1, 10, null);
+        return _createSubscription(SUBSCR_NAME_5, { "autoCreate" : true, "subscrConfig" : config })
+            .then(function (value) {
+                return _pubSubTimeout();
+            }.bindenv(this))
+            .then(function (value) {
+                return _removeSubscription(SUBSCR_NAME_5, true);
+            }.bindenv(this))
+            .then(function (value) {
+                return _pubSubTimeout();
+            }.bindenv(this))
+            .then(function (value) {
+                return Promise(function (resolve, reject) {
+                    _subscrs.remove(SUBSCR_NAME_5, function (error) {
+                        if (!error || error.httpStatus != 404) {
+                            return reject("subscriptions remove error");
                         }
-                        imp.wakeup(3.0, function() {
-                            _subscrs.remove(SUBSCR_NAME_1, function (error) {
-                                if (!error || error.httpStatus != 404) {
-                                    return reject("subscriptions remove error");
-                                }
-                                return resolve("");
-                            }.bindenv(this));
-                        }.bindenv(this));
+                        return resolve("");
                     }.bindenv(this));
                 }.bindenv(this));
+            }.bindenv(this))
+            .fail(function (reason) {
+                return Promise.reject(reason);
             }.bindenv(this));
-        }.bindenv(this));
     }
 
     function testModifyPushConfig() {

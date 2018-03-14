@@ -22,16 +22,7 @@
 // ARISING FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR
 // OTHER DEALINGS IN THE SOFTWARE.
 
-@include "https://raw.githubusercontent.com/electricimp/AWSRequestV4/master/AWSRequestV4.class.nut"
-@include "https://raw.githubusercontent.com/electricimp/AWSLambda/master/AWSLambda.agent.lib.nut"
-@include "https://raw.githubusercontent.com/electricimp/OAuth-2.0/master/OAuth2.agent.lib.nut"
-
-const GOOGLE_PROJECT_ID="@{GOOGLE_PROJECT_ID}";
-const AWS_LAMBDA_REGION="@{AWS_LAMBDA_REGION}";
-const AWS_ACCESS_KEY_ID="@{AWS_ACCESS_KEY_ID}";
-const AWS_SECRET_ACCESS_KEY="@{AWS_SECRET_ACCESS_KEY}";
-const GOOGLE_ISS="@{GOOGLE_ISS}";
-const GOOGLE_SECRET_KEY="@{GOOGLE_SECRET_KEY}";
+@include "./tests/CommonTest.nut"
 
 const TOPIC_NAME_1 = "imptest_pull_subscriber_topic_1";
 const TOPIC_NAME_2 = "imptest_pull_subscriber_topic_2";
@@ -45,31 +36,21 @@ const SUBSCR_NAME_4 = "imptest_pull_subscriber_subscr_4";
 const SUBSCR_NAME_5 = "imptest_pull_subscriber_subscr_5";
 
 // Test case for GooglePubSub.PullSubscriber library
-class PullSubscriberTestCase extends ImpTestCase {
-    _topics = null;
+class PullSubscriberTestCase extends CommonTest {
     _publisher = null;
     _publisher2 = null;
     _publisher3 = null;
     _publisher4 = null;
     _publisher5 = null;
-    _subscrs = null;
     _subscriber = null;
     _subscriber2 = null;
     _subscriber3 = null;
     _subscriber4 = null;
     _subscriber5 = null;
-    _oAuthTokenProvider = null;
 
     // Initializes GooglePubSub.Publisher library
     function setUp() {
-        _oAuthTokenProvider = OAuth2.JWTProfile.Client(
-            OAuth2.DeviceFlow.GOOGLE,
-            {
-                "iss"         : GOOGLE_ISS,
-                "jwtSignKey"  : GOOGLE_SECRET_KEY,
-                "scope"       : "https://www.googleapis.com/auth/pubsub",
-                "rs256signer" : AWSLambda(AWS_LAMBDA_REGION, AWS_ACCESS_KEY_ID, AWS_SECRET_ACCESS_KEY)
-            });
+        _setUp();
         _topics = GooglePubSub.Topics(GOOGLE_PROJECT_ID, _oAuthTokenProvider);
         _subscrs = GooglePubSub.Subscriptions(GOOGLE_PROJECT_ID, _oAuthTokenProvider);
         _publisher = GooglePubSub.Publisher(GOOGLE_PROJECT_ID, _oAuthTokenProvider, TOPIC_NAME_1);
@@ -85,24 +66,16 @@ class PullSubscriberTestCase extends ImpTestCase {
         // clean up topics/subscriptions first
         return tearDown().
             then(function(value) {
-                    return _createTopicAndSubscription(TOPIC_NAME_1, SUBSCR_NAME_1);
+                    return Promise.all([
+                        _createTopicAndSubscription(TOPIC_NAME_1, SUBSCR_NAME_1),
+                        _createTopicAndSubscription(TOPIC_NAME_2, SUBSCR_NAME_2),
+                        _createTopicAndSubscription(TOPIC_NAME_3, SUBSCR_NAME_3),
+                        _createTopicAndSubscription(TOPIC_NAME_4, SUBSCR_NAME_4),
+                        _createTopicAndSubscription(TOPIC_NAME_5, SUBSCR_NAME_5)
+                    ]);
                 }.bindenv(this)).
             then(function(value) {
-                    return _createTopicAndSubscription(TOPIC_NAME_2, SUBSCR_NAME_2); 
-                }.bindenv(this)).
-            then(function(value) {
-                    return _createTopicAndSubscription(TOPIC_NAME_3, SUBSCR_NAME_3);
-                }.bindenv(this)).
-            then(function(value) {
-                    return _createTopicAndSubscription(TOPIC_NAME_4, SUBSCR_NAME_4);
-                }.bindenv(this)).
-            then(function(value) {
-                    return _createTopicAndSubscription(TOPIC_NAME_5, SUBSCR_NAME_5);
-                }.bindenv(this)).
-            then(function(value) {
-                    imp.wakeup(3.0, function() {
-                        return Promise.resolve("");
-                    }.bindenv(this));
+                    return _pubSubTimeout();
                 }.bindenv(this)).
             fail(function(reason) {
                     return Promise.reject(reason);
@@ -110,20 +83,14 @@ class PullSubscriberTestCase extends ImpTestCase {
     }
 
     function _createTopicAndSubscription(topicName, subscrName) {
-        return Promise(function (resolve, reject) {
-            _topics.obtain(topicName, { "autoCreate" : true }, function (error) {
-                if (error) {
-                    return reject(format("topic %s isn't created: %s", topicName, error.details));
-                }
+        return _createTopic(topicName)
+            .then(function(value) {
                 local config = GooglePubSub.SubscriptionConfig(topicName);
-                _subscrs.obtain(subscrName, { "autoCreate" : true, "subscrConfig" : config }, function (error, subscrConfig) {
-                    if (error) {
-                        return reject(format("subscription %s isn't created: %s", subscrName, error.details));
-                    }
-                    return resolve("");
-                }.bindenv(this));
+                return _createSubscription(subscrName, { "autoCreate" : true, "subscrConfig" : config });
+            }.bindenv(this))
+            .fail(function (reason) {
+                return Promise.reject(reason);
             }.bindenv(this));
-        }.bindenv(this));
     }
 
     function tearDown() {
@@ -132,9 +99,7 @@ class PullSubscriberTestCase extends ImpTestCase {
                     return _removeTopics();
                 }.bindenv(this)).
             then(function(value) {
-                    imp.wakeup(3.0, function() {
-                        return Promise.resolve("");
-                    }.bindenv(this));
+                    return _pubSubTimeout();
                 }.bindenv(this)).
             fail(function(reason) {
                     return Promise.reject(reason);
@@ -143,35 +108,23 @@ class PullSubscriberTestCase extends ImpTestCase {
     }
 
     function _removeTopics() {
-        return Promise(function (resolve, reject) {
-            _topics.remove(TOPIC_NAME_1, function (error) {
-                _topics.remove(TOPIC_NAME_2, function (error) {
-                    _topics.remove(TOPIC_NAME_3, function (error) {
-                        _topics.remove(TOPIC_NAME_4, function (error) {
-                            _topics.remove(TOPIC_NAME_5, function (error) {
-                                return resolve("");
-                            }.bindenv(this));
-                        }.bindenv(this));
-                    }.bindenv(this));
-                }.bindenv(this));
-            }.bindenv(this));
-        }.bindenv(this));
+        return Promise.all([
+                _removeTopic(TOPIC_NAME_1),
+                _removeTopic(TOPIC_NAME_2),
+                _removeTopic(TOPIC_NAME_3),
+                _removeTopic(TOPIC_NAME_4),
+                _removeTopic(TOPIC_NAME_5)
+            ]);
     }
 
     function _removeSubscrs() {
-        return Promise(function (resolve, reject) {
-            _subscrs.remove(SUBSCR_NAME_1, function (error) {
-                _subscrs.remove(SUBSCR_NAME_2, function (error) {
-                    _subscrs.remove(SUBSCR_NAME_3, function (error) {
-                        _subscrs.remove(SUBSCR_NAME_4, function (error) {
-                            _subscrs.remove(SUBSCR_NAME_5, function (error) {
-                                return resolve("");
-                            }.bindenv(this));
-                        }.bindenv(this));
-                    }.bindenv(this));
-                }.bindenv(this));
-            }.bindenv(this));
-        }.bindenv(this));
+        return Promise.all([
+                _removeSubscription(SUBSCR_NAME_1),
+                _removeSubscription(SUBSCR_NAME_2),
+                _removeSubscription(SUBSCR_NAME_3),
+                _removeSubscription(SUBSCR_NAME_4),
+                _removeSubscription(SUBSCR_NAME_5)
+            ]);
     }
 
     // Tests pull() method
