@@ -1,6 +1,6 @@
 // MIT License
 //
-// Copyright 2017 Electric Imp
+// Copyright 2017-2018 Electric Imp
 //
 // SPDX-License-Identifier: MIT
 //
@@ -47,7 +47,7 @@ class TopicsTestCase extends CommonTest {
                 ]);
             }.bindenv(this))
             .then(function (value) {
-                return _pubSubTimeout();
+                return _pubSubDelay();
             }.bindenv(this))
             .fail(function (reason) {
                 return Promise.reject(reason);
@@ -63,7 +63,7 @@ class TopicsTestCase extends CommonTest {
                 _removeTopic(TOPIC_NAME_5)
             ])
             .then(function (value) {
-                return _pubSubTimeout();
+                return _pubSubDelay();
             }.bindenv(this))
             .fail(function (reason) {
                 return Promise.reject(reason);
@@ -74,7 +74,7 @@ class TopicsTestCase extends CommonTest {
     function testTopicObtain() {
         return _removeTopic(TOPIC_NAME_1)
             .then(function (value) {
-                return _pubSubTimeout();
+                return _pubSubDelay();
             }.bindenv(this))
             .then(function (value) {
                 return Promise(function (resolve, reject) {
@@ -144,13 +144,13 @@ class TopicsTestCase extends CommonTest {
     function testTopicRemove() {
         return _createTopic(TOPIC_NAME_5)
             .then(function (value) {
-                return _pubSubTimeout();
+                return _pubSubDelay();
             }.bindenv(this))
             .then(function (value) {
                 return _removeTopic(TOPIC_NAME_5, true);
             }.bindenv(this))
             .then(function (value) {
-                return _pubSubTimeout();
+                return _pubSubDelay();
             }.bindenv(this))
             .then(function (value) {
                 return Promise(function (resolve, reject) {

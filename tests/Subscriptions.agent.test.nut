@@ -1,6 +1,6 @@
 // MIT License
 //
-// Copyright 2017 Electric Imp
+// Copyright 2017-2018 Electric Imp
 //
 // SPDX-License-Identifier: MIT
 //
@@ -56,7 +56,7 @@ class SubscriptionsTestCase extends CommonTest {
                 return _createSubscription(SUBSCR_NAME_4, { "autoCreate" : true, "subscrConfig" : GooglePubSub.SubscriptionConfig(TOPIC_NAME_1) });
             }.bindenv(this))
             .then(function (value) {
-                return _pubSubTimeout();
+                return _pubSubDelay();
             }.bindenv(this))
             .fail(function (reason) {
                 return Promise.reject(reason);
@@ -75,7 +75,7 @@ class SubscriptionsTestCase extends CommonTest {
                 return _removeTopic(TOPIC_NAME_1);
             }.bindenv(this))
             .then(function (value) {
-                return _pubSubTimeout();
+                return _pubSubDelay();
             }.bindenv(this))
             .fail(function (reason) {
                 return Promise.reject(reason);
@@ -86,7 +86,7 @@ class SubscriptionsTestCase extends CommonTest {
     function testSubscriptionObtain() {
         return _removeSubscription(SUBSCR_NAME_1)
             .then(function (value) {
-                return _pubSubTimeout();
+                return _pubSubDelay();
             }.bindenv(this))
             .then(function (value) {
                 return Promise(function (resolve, reject) {
@@ -181,13 +181,13 @@ class SubscriptionsTestCase extends CommonTest {
         local config = GooglePubSub.SubscriptionConfig(TOPIC_NAME_1, 10, null);
         return _createSubscription(SUBSCR_NAME_5, { "autoCreate" : true, "subscrConfig" : config })
             .then(function (value) {
-                return _pubSubTimeout();
+                return _pubSubDelay();
             }.bindenv(this))
             .then(function (value) {
                 return _removeSubscription(SUBSCR_NAME_5, true);
             }.bindenv(this))
             .then(function (value) {
-                return _pubSubTimeout();
+                return _pubSubDelay();
             }.bindenv(this))
             .then(function (value) {
                 return Promise(function (resolve, reject) {

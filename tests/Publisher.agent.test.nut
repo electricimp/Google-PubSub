@@ -1,6 +1,6 @@
 // MIT License
 //
-// Copyright 2017 Electric Imp
+// Copyright 2017-2018 Electric Imp
 //
 // SPDX-License-Identifier: MIT
 //
@@ -41,7 +41,7 @@ class PublisherTestCase extends CommonTest {
                 return _createTopic(TOPIC_NAME_1);
             }.bindenv(this))
             .then(function (value) {
-                return _pubSubTimeout();
+                return _pubSubDelay();
             }.bindenv(this))
             .fail(function (reason) {
                 return Promise.reject(reason);
@@ -51,7 +51,7 @@ class PublisherTestCase extends CommonTest {
     function tearDown() {
         return _removeTopic(TOPIC_NAME_1)
             .then(function (value) {
-                return _pubSubTimeout();
+                return _pubSubDelay();
             }.bindenv(this))
             .fail(function (reason) {
                 return Promise.reject(reason);
