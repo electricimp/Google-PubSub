@@ -33,7 +33,7 @@ const AWS_SECRET_ACCESS_KEY = "@{AWS_SECRET_ACCESS_KEY}";
 const GOOGLE_ISS = "@{GOOGLE_ISS}";
 const GOOGLE_SECRET_KEY = "@{GOOGLE_SECRET_KEY}";
 
-const GOOGLE_PUB_SUB_DELAY = 3.0
+const GOOGLE_PUB_SUB_DELAY_SEC = 3.0;
 
 class CommonTest extends ImpTestCase {
     _topics = null;
@@ -155,7 +155,7 @@ class CommonTest extends ImpTestCase {
 
     function _pubSubDelay() {
         return Promise(function (resolve, reject) {
-            imp.wakeup(GOOGLE_PUB_SUB_DELAY, function() {
+            imp.wakeup(GOOGLE_PUB_SUB_DELAY_SEC, function() {
                 return resolve("");
             }.bindenv(this));
         }.bindenv(this));
