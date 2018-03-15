@@ -73,12 +73,6 @@ class PullSubscriberTestCase extends CommonTest {
                         _createTopicAndSubscription(TOPIC_NAME_4, SUBSCR_NAME_4),
                         _createTopicAndSubscription(TOPIC_NAME_5, SUBSCR_NAME_5)
                     ]);
-                }.bindenv(this)).
-            then(function(value) {
-                    return _pubSubDelay();
-                }.bindenv(this)).
-            fail(function(reason) {
-                    return Promise.reject(reason);
                 }.bindenv(this));
     }
 
@@ -87,9 +81,6 @@ class PullSubscriberTestCase extends CommonTest {
             .then(function(value) {
                 local config = GooglePubSub.SubscriptionConfig(topicName);
                 return _createSubscription(subscrName, { "autoCreate" : true, "subscrConfig" : config });
-            }.bindenv(this))
-            .fail(function (reason) {
-                return Promise.reject(reason);
             }.bindenv(this));
     }
 
@@ -97,14 +88,7 @@ class PullSubscriberTestCase extends CommonTest {
         return _removeSubscrs().
             then(function(value) {
                     return _removeTopics();
-                }.bindenv(this)).
-            then(function(value) {
-                    return _pubSubDelay();
-                }.bindenv(this)).
-            fail(function(reason) {
-                    return Promise.reject(reason);
-                }.bindenv(this)
-            );
+                }.bindenv(this));
     }
 
     function _removeTopics() {

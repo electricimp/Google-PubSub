@@ -54,12 +54,6 @@ class SubscriptionsTestCase extends CommonTest {
             }.bindenv(this))
             .then(function (value) {
                 return _createSubscription(SUBSCR_NAME_4, { "autoCreate" : true, "subscrConfig" : GooglePubSub.SubscriptionConfig(TOPIC_NAME_1) });
-            }.bindenv(this))
-            .then(function (value) {
-                return _pubSubDelay();
-            }.bindenv(this))
-            .fail(function (reason) {
-                return Promise.reject(reason);
             }.bindenv(this));
     }
 
@@ -73,21 +67,12 @@ class SubscriptionsTestCase extends CommonTest {
             ])
             .then(function (value) {
                 return _removeTopic(TOPIC_NAME_1);
-            }.bindenv(this))
-            .then(function (value) {
-                return _pubSubDelay();
-            }.bindenv(this))
-            .fail(function (reason) {
-                return Promise.reject(reason);
             }.bindenv(this));
     }
 
     // Tests Subscriptions.obtain
     function testSubscriptionObtain() {
         return _removeSubscription(SUBSCR_NAME_1)
-            .then(function (value) {
-                return _pubSubDelay();
-            }.bindenv(this))
             .then(function (value) {
                 return Promise(function (resolve, reject) {
                     _subscrs.obtain(SUBSCR_NAME_1, null, function (error, subscrConfig) {
@@ -113,9 +98,6 @@ class SubscriptionsTestCase extends CommonTest {
                         }.bindenv(this));
                     }.bindenv(this));
                 }.bindenv(this));
-            }.bindenv(this))
-            .fail(function (reason) {
-                return Promise.reject(reason);
             }.bindenv(this));
     }
 
@@ -181,13 +163,7 @@ class SubscriptionsTestCase extends CommonTest {
         local config = GooglePubSub.SubscriptionConfig(TOPIC_NAME_1, 10, null);
         return _createSubscription(SUBSCR_NAME_5, { "autoCreate" : true, "subscrConfig" : config })
             .then(function (value) {
-                return _pubSubDelay();
-            }.bindenv(this))
-            .then(function (value) {
                 return _removeSubscription(SUBSCR_NAME_5, true);
-            }.bindenv(this))
-            .then(function (value) {
-                return _pubSubDelay();
             }.bindenv(this))
             .then(function (value) {
                 return Promise(function (resolve, reject) {
@@ -198,9 +174,6 @@ class SubscriptionsTestCase extends CommonTest {
                         return resolve("");
                     }.bindenv(this));
                 }.bindenv(this));
-            }.bindenv(this))
-            .fail(function (reason) {
-                return Promise.reject(reason);
             }.bindenv(this));
     }
 

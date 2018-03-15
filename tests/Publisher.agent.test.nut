@@ -39,23 +39,11 @@ class PublisherTestCase extends CommonTest {
         return tearDown()
             .then(function(value) {
                 return _createTopic(TOPIC_NAME_1);
-            }.bindenv(this))
-            .then(function (value) {
-                return _pubSubDelay();
-            }.bindenv(this))
-            .fail(function (reason) {
-                return Promise.reject(reason);
             }.bindenv(this));
     }
 
     function tearDown() {
-        return _removeTopic(TOPIC_NAME_1)
-            .then(function (value) {
-                return _pubSubDelay();
-            }.bindenv(this))
-            .fail(function (reason) {
-                return Promise.reject(reason);
-            }.bindenv(this));
+        return _removeTopic(TOPIC_NAME_1);
     }
 
     // Tests Publisher.publish

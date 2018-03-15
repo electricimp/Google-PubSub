@@ -26,15 +26,14 @@
 @include "https://raw.githubusercontent.com/electricimp/AWSLambda/master/AWSLambda.agent.lib.nut"
 @include "https://raw.githubusercontent.com/electricimp/OAuth-2.0/master/OAuth2.agent.lib.nut"
 
-@set GOOGLE_PUB_SUB_DELAY_DEFAULT 3.0
-
 const GOOGLE_PROJECT_ID = "@{GOOGLE_PROJECT_ID}";
 const AWS_LAMBDA_REGION = "@{AWS_LAMBDA_REGION}";
 const AWS_ACCESS_KEY_ID = "@{AWS_ACCESS_KEY_ID}";
 const AWS_SECRET_ACCESS_KEY = "@{AWS_SECRET_ACCESS_KEY}";
 const GOOGLE_ISS = "@{GOOGLE_ISS}";
 const GOOGLE_SECRET_KEY = "@{GOOGLE_SECRET_KEY}";
-const GOOGLE_PUB_SUB_DELAY = @{defined(GOOGLE_PUB_SUB_DELAY) ? GOOGLE_PUB_SUB_DELAY : GOOGLE_PUB_SUB_DELAY_DEFAULT};
+
+const GOOGLE_PUB_SUB_DELAY = 3.0
 
 class CommonTest extends ImpTestCase {
     _topics = null;
@@ -108,6 +107,9 @@ class CommonTest extends ImpTestCase {
             }.bindenv(this));
     }
 
+    // Sometimes the Google PubSub service requires significant time to actually process a request (eg. create/delete Topic or Subscription),
+    // even after the successful response was already received.
+    // This function periodically checks the created/deleted entity existence and resolves when it is actually created/deleted.
     function _checkEntityStatus(entityName, isTopic, checkEntityExists) {
         local checked = false;
         local statusChecker = function(error, resolve, reject) {

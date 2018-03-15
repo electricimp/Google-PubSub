@@ -60,7 +60,6 @@ You should receive a success message like “Congratulations, you have successfu
 
 - Set the mandatory environment variables (*GOOGLE_PROJECT_ID*, *GOOGLE_ISS*, *GOOGLE_SECRET_KEY*, *AWS_LAMBDA_REGION*, *AWS_ACCESS_KEY_ID*, *AWS_SECRET_ACCESS_KEY*) to the values you retrieved and saved in the previous steps.
 - If needed, set optional environment variables 
-    - *GOOGLE_PUB_SUB_DELAY* - a delay (in seconds) between requests to the Google PubSub service. Sometime the Google PubSub service requires significant time to actually process a request (eg. create Topic or Subscription), even after the successful response was already sent. This time is unpredictable. The default delay in the tests is 3 sec. But you may need to specify a bigger one using this environment variable.
     - *GITHUB_USER* / *GITHUB_TOKEN* - a GitHub account username / password or personal access token. You need to specify them when you got `GitHub rate limit reached` error.
 - For integration with [Travis](https://travis-ci.org) set *EI_LOGIN_KEY* environment variable to the valid impCentral login key.
 

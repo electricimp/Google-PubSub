@@ -65,12 +65,6 @@ class PushSubscriberTestCase extends CommonTest {
                     _createSubscription(SUBSCR_NAME_2, { "autoCreate" : true, "subscrConfig" : config2 }),
                     _createSubscription(SUBSCR_NAME_3, { "autoCreate" : true, "subscrConfig" : config3 })
                 ]);
-            }.bindenv(this))
-            .then(function (value) {
-                return _pubSubDelay();
-            }.bindenv(this))
-            .fail(function (reason) {
-                return Promise.reject(reason);
             }.bindenv(this));
     }
 
@@ -85,12 +79,6 @@ class PushSubscriberTestCase extends CommonTest {
                     _removeTopic(TOPIC_NAME_1),
                     _removeTopic(TOPIC_NAME_2)
                 ]);
-            }.bindenv(this))
-            .then(function (value) {
-                return _pubSubDelay();
-            }.bindenv(this))
-            .fail(function (reason) {
-                return Promise.reject(reason);
             }.bindenv(this));
     }
 

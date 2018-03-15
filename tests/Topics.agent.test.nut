@@ -45,12 +45,6 @@ class TopicsTestCase extends CommonTest {
                     _createTopic(TOPIC_NAME_3),
                     _createTopic(TOPIC_NAME_4)
                 ]);
-            }.bindenv(this))
-            .then(function (value) {
-                return _pubSubDelay();
-            }.bindenv(this))
-            .fail(function (reason) {
-                return Promise.reject(reason);
             }.bindenv(this));
     }
 
@@ -61,21 +55,12 @@ class TopicsTestCase extends CommonTest {
                 _removeTopic(TOPIC_NAME_3),
                 _removeTopic(TOPIC_NAME_4),
                 _removeTopic(TOPIC_NAME_5)
-            ])
-            .then(function (value) {
-                return _pubSubDelay();
-            }.bindenv(this))
-            .fail(function (reason) {
-                return Promise.reject(reason);
-            }.bindenv(this));
+            ]);
     }
 
     // Tests Topics.obtain
     function testTopicObtain() {
         return _removeTopic(TOPIC_NAME_1)
-            .then(function (value) {
-                return _pubSubDelay();
-            }.bindenv(this))
             .then(function (value) {
                 return Promise(function (resolve, reject) {
                     _topics.obtain(TOPIC_NAME_1, null, function (error) {
@@ -95,9 +80,6 @@ class TopicsTestCase extends CommonTest {
                         }.bindenv(this));
                     }.bindenv(this));
                 }.bindenv(this));
-            }.bindenv(this))
-            .fail(function (reason) {
-                return Promise.reject(reason);
             }.bindenv(this));
     }
 
@@ -144,13 +126,7 @@ class TopicsTestCase extends CommonTest {
     function testTopicRemove() {
         return _createTopic(TOPIC_NAME_5)
             .then(function (value) {
-                return _pubSubDelay();
-            }.bindenv(this))
-            .then(function (value) {
                 return _removeTopic(TOPIC_NAME_5, true);
-            }.bindenv(this))
-            .then(function (value) {
-                return _pubSubDelay();
             }.bindenv(this))
             .then(function (value) {
                 return Promise(function (resolve, reject) {
