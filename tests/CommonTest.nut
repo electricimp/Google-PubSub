@@ -54,46 +54,101 @@ class CommonTest extends ImpTestCase {
 
     function _removeTopic(topicName, checkError = false) {
         return Promise(function (resolve, reject) {
-            _topics.remove(topicName, function (error) {
-                if (error && checkError) {
-                    return reject(format("topic %s removing failed: %s", topicName, error.details));
-                }
-                return resolve("");
-            }.bindenv(this));
-        }.bindenv(this));
+                    _topics.remove(topicName, function (error) {
+                        if (error && checkError) {
+                            return reject(format("topic %s removing failed: %s", topicName, error.details));
+                        }
+                        return resolve("");
+                    }.bindenv(this));
+                }.bindenv(this))
+            .then(function (value) {
+                return _checkEntityStatus(topicName, true, false);
+            }.bindenv(this))
     }
 
     function _createTopic(topicName) {
         return Promise(function (resolve, reject) {
-            _topics.obtain(topicName, { "autoCreate" : true }, function (error) {
-                if (error) {
-                    return reject(format("topic %s isn't created: %s", topicName, error.details));
-                }
-                return resolve("");
+                    _topics.obtain(topicName, { "autoCreate" : true }, function (error) {
+                        if (error) {
+                            return reject(format("topic %s isn't created: %s", topicName, error.details));
+                        }
+                        return resolve("");
+                    }.bindenv(this));
+                }.bindenv(this))
+            .then(function (value) {
+                return _checkEntityStatus(topicName, true, true);
             }.bindenv(this));
-        }.bindenv(this));
     }
 
     function _removeSubscription(subscrName, checkError = false) {
         return Promise(function (resolve, reject) {
-            _subscrs.remove(subscrName, function (error) {
-                if (error && checkError) {
-                    return reject(format("subscription %s removing failed: %s", topicName, error.details));
-                }
-                return resolve("");
-            }.bindenv(this));
-        }.bindenv(this));
+                    _subscrs.remove(subscrName, function (error) {
+                        if (error && checkError) {
+                            return reject(format("subscription %s removing failed: %s", topicName, error.details));
+                        }
+                        return resolve("");
+                    }.bindenv(this));
+                }.bindenv(this))
+            .then(function (value) {
+                return _checkEntityStatus(subscrName, false, false);
+            }.bindenv(this))
     }
 
     function _createSubscription(subscrName, options) {
         return Promise(function (resolve, reject) {
-            _subscrs.obtain(subscrName, options, function (error, subscrConfig) {
-                if (error) {
-                    return reject(format("subscription %s isn't created: %s", subscrName, error.details));
-                }
-                return resolve("");
+                    _subscrs.obtain(subscrName, options, function (error, subscrConfig) {
+                        if (error) {
+                            return reject(format("subscription %s isn't created: %s", subscrName, error.details));
+                        }
+                        return resolve("");
+                    }.bindenv(this));
+                }.bindenv(this))
+            .then(function (value) {
+                return _checkEntityStatus(subscrName, false, true);
             }.bindenv(this));
-        }.bindenv(this));
+    }
+
+    function _checkEntityStatus(entityName, isTopic, checkEntityExists) {
+        local checked = false;
+        local statusChecker = function(error, resolve, reject) {
+            if (!error) {
+                if (checkEntityExists) {
+                    checked = true;
+                }
+                resolve("");
+            }
+            else if (error.type == PUB_SUB_ERROR.PUB_SUB_REQUEST_FAILED &&
+                error.httpStatus == 404) {
+                if (!checkEntityExists) {
+                    checked = true;
+                }
+                resolve("");
+            }
+            else {
+                reject(error);
+            }
+        }
+        return Promise.loop(
+            function() {
+                return !checked;
+            }.bindenv(this),
+            function () {
+                return _pubSubDelay()
+                    .then(function (value) {
+                        return Promise(function (resolve, reject) {
+                            if (isTopic) {
+                                _topics.obtain(entityName, null, function(error) {
+                                    statusChecker(error, resolve, reject);
+                                }.bindenv(this));
+                            }
+                            else {
+                                _subscrs.obtain(entityName, null, function(error, subscrConfig) {
+                                    statusChecker(error, resolve, reject);
+                                }.bindenv(this));
+                            }
+                        }.bindenv(this))
+                    }.bindenv(this));
+            }.bindenv(this));
     }
 
     function _pubSubDelay() {
