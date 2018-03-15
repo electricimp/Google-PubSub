@@ -1,6 +1,6 @@
 // MIT License
 //
-// Copyright 2017 Electric Imp
+// Copyright 2017-2018 Electric Imp
 //
 // SPDX-License-Identifier: MIT
 //
@@ -22,16 +22,7 @@
 // ARISING FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR
 // OTHER DEALINGS IN THE SOFTWARE.
 
-@include "https://raw.githubusercontent.com/electricimp/AWSRequestV4/master/AWSRequestV4.class.nut"
-@include "https://raw.githubusercontent.com/electricimp/AWSLambda/master/AWSLambda.agent.lib.nut"
-@include "https://raw.githubusercontent.com/electricimp/OAuth-2.0/master/OAuth2.agent.lib.nut"
-
-const GOOGLE_PROJECT_ID="@{GOOGLE_PROJECT_ID}";
-const AWS_LAMBDA_REGION="@{AWS_LAMBDA_REGION}";
-const AWS_ACCESS_KEY_ID="@{AWS_ACCESS_KEY_ID}";
-const AWS_SECRET_ACCESS_KEY="@{AWS_SECRET_ACCESS_KEY}";
-const GOOGLE_ISS="@{GOOGLE_ISS}";
-const GOOGLE_SECRET_KEY="@{GOOGLE_SECRET_KEY}";
+@include "./tests/CommonTest.nut"
 
 const TOPIC_NAME_1 = "imptest_push_subscriber_topic_1";
 const TOPIC_NAME_2 = "imptest_push_subscriber_topic_2";
@@ -40,25 +31,15 @@ const SUBSCR_NAME_2 = "imptest_push_subscriber_subscr_2";
 const SUBSCR_NAME_3 = "imptest_push_subscriber_subscr_3";
 
 // Test case for GooglePubSub.PushSubscriber library
-class PushSubscriberTestCase extends ImpTestCase {
-    _topics = null;
+class PushSubscriberTestCase extends CommonTest {
     _publisher = null;
     _publisher2 = null;
-    _subscrs = null;
     _subscriber = null;
     _subscriber2 = null;
-    _oAuthTokenProvider = null;
 
     // Initializes GooglePubSub.Publisher library
     function setUp() {
-        _oAuthTokenProvider = OAuth2.JWTProfile.Client(
-            OAuth2.DeviceFlow.GOOGLE,
-            {
-                "iss"         : GOOGLE_ISS,
-                "jwtSignKey"  : GOOGLE_SECRET_KEY,
-                "scope"       : "https://www.googleapis.com/auth/pubsub",
-                "rs256signer" : AWSLambda(AWS_LAMBDA_REGION, AWS_ACCESS_KEY_ID, AWS_SECRET_ACCESS_KEY)
-            });
+        _setUp();
         _topics = GooglePubSub.Topics(GOOGLE_PROJECT_ID, _oAuthTokenProvider);
         _publisher = GooglePubSub.Publisher(GOOGLE_PROJECT_ID, _oAuthTokenProvider, TOPIC_NAME_1);
         _publisher2 = GooglePubSub.Publisher(GOOGLE_PROJECT_ID, _oAuthTokenProvider, TOPIC_NAME_2);
@@ -66,65 +47,39 @@ class PushSubscriberTestCase extends ImpTestCase {
         _subscriber = GooglePubSub.PushSubscriber(GOOGLE_PROJECT_ID, _oAuthTokenProvider, SUBSCR_NAME_1);
         _subscriber2 = GooglePubSub.PushSubscriber(GOOGLE_PROJECT_ID, _oAuthTokenProvider, SUBSCR_NAME_2);
         // clean up topics/subscriptions first
-        return tearDown().then(
-            function(value) {
-                return Promise(function (resolve, reject) {
-                    _topics.obtain(TOPIC_NAME_1, { "autoCreate" : true }, function (error) {
-                        if (error) {
-                            return reject(format("topic %s isn't created: %s", TOPIC_NAME_1, error.details));
-                        }
-                        _topics.obtain(TOPIC_NAME_2, { "autoCreate" : true }, function (error) {
-                            if (error) {
-                                return reject(format("topic %s isn't created: %s", TOPIC_NAME_2, error.details));
-                            }
-                            local config1 = GooglePubSub.SubscriptionConfig(
-                                TOPIC_NAME_1, 10, GooglePubSub.PushConfig(_subscrs.getImpAgentEndpoint(null, "12345")));
-                            _subscrs.obtain(SUBSCR_NAME_1, { "autoCreate" : true, "subscrConfig" : config1 }, function (error, subscrConfig) {
-                                if (error) {
-                                    return reject(format("subscription %s isn't created: %s", SUBSCR_NAME_1, error.details));
-                                }
-                                local config2 = GooglePubSub.SubscriptionConfig(
-                                    TOPIC_NAME_2, 10, GooglePubSub.PushConfig(_subscrs.getImpAgentEndpoint(null, "12345")));
-                                _subscrs.obtain(SUBSCR_NAME_2, { "autoCreate" : true, "subscrConfig" : config2 }, function (error, subscrConfig) {
-                                    if (error) {
-                                        return reject(format("subscription %s isn't created: %s", SUBSCR_NAME_2, error.details));
-                                    }
-                                    local config3 = GooglePubSub.SubscriptionConfig(TOPIC_NAME_1);
-                                    _subscrs.obtain(SUBSCR_NAME_3, { "autoCreate" : true, "subscrConfig" : config3 }, function (error, subscrConfig) {
-                                        if (error) {
-                                            return reject(format("subscription %s isn't created: %s", SUBSCR_NAME_3, error.details));
-                                        }
-                                        imp.wakeup(3.0, function() {
-                                            return resolve("");
-                                        }.bindenv(this));
-                                    }.bindenv(this));
-                                }.bindenv(this));
-                            }.bindenv(this));
-                        }.bindenv(this));
-                    }.bindenv(this));
-                }.bindenv(this));
-            }.bindenv(this),
-            function(reason) {
-                return reject(reason);
+        return tearDown()
+            .then(function(value) {
+                return Promise.all([
+                    _createTopic(TOPIC_NAME_1),
+                    _createTopic(TOPIC_NAME_2)
+                ]);
+            }.bindenv(this))
+            .then(function(value) {
+                local config1 = GooglePubSub.SubscriptionConfig(
+                    TOPIC_NAME_1, 10, GooglePubSub.PushConfig(_subscrs.getImpAgentEndpoint(null, "12345")));
+                local config2 = GooglePubSub.SubscriptionConfig(
+                    TOPIC_NAME_2, 10, GooglePubSub.PushConfig(_subscrs.getImpAgentEndpoint(null, "12345")));
+                local config3 = GooglePubSub.SubscriptionConfig(TOPIC_NAME_1);
+                return Promise.all([
+                    _createSubscription(SUBSCR_NAME_1, { "autoCreate" : true, "subscrConfig" : config1 }),
+                    _createSubscription(SUBSCR_NAME_2, { "autoCreate" : true, "subscrConfig" : config2 }),
+                    _createSubscription(SUBSCR_NAME_3, { "autoCreate" : true, "subscrConfig" : config3 })
+                ]);
             }.bindenv(this));
     }
 
     function tearDown() {
-        return Promise(function (resolve, reject) {
-            _subscrs.remove(SUBSCR_NAME_1, function (error) {
-                _subscrs.remove(SUBSCR_NAME_2, function (error) {
-                    _subscrs.remove(SUBSCR_NAME_3, function (error) {
-                        _topics.remove(TOPIC_NAME_1, function (error) {
-                            _topics.remove(TOPIC_NAME_2, function (error) {
-                                imp.wakeup(3.0, function() {
-                                    return resolve("");
-                                }.bindenv(this));
-                            }.bindenv(this));
-                        }.bindenv(this));
-                    }.bindenv(this));
-                }.bindenv(this));
+        return Promise.all([
+                _removeSubscription(SUBSCR_NAME_1),
+                _removeSubscription(SUBSCR_NAME_2),
+                _removeSubscription(SUBSCR_NAME_3)
+            ])
+            .then(function(value) {
+                return Promise.all([
+                    _removeTopic(TOPIC_NAME_1),
+                    _removeTopic(TOPIC_NAME_2)
+                ]);
             }.bindenv(this));
-        }.bindenv(this));
     }
 
     // Tests messages receiving
