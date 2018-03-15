@@ -71,15 +71,13 @@ class TopicsTestCase extends CommonTest {
                             if (!error) {
                                 return reject("topic wrongly obtained");
                             }
-                            _topics.obtain(TOPIC_NAME_1, { "autoCreate" : true }, function (error) {
-                                if (error) {
-                                    return reject(format("topic %s isn't created: %s", TOPIC_NAME_1, error.details));
-                                }
-                                return resolve("");
-                            }.bindenv(this));
+                            return resolve("");
                         }.bindenv(this));
                     }.bindenv(this));
                 }.bindenv(this));
+            }.bindenv(this))
+            .then(function (value) {
+                return _createTopic(TOPIC_NAME_1);
             }.bindenv(this));
     }
 

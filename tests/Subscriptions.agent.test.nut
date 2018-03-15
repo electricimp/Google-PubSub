@@ -83,21 +83,29 @@ class SubscriptionsTestCase extends CommonTest {
                             if (!error) {
                                 return reject("subscription wrongly obtained");
                             }
-                            local config = GooglePubSub.SubscriptionConfig(TOPIC_NAME_1, 20, null);
-                            _subscrs.obtain(SUBSCR_NAME_1, { "autoCreate" : true, "subscrConfig" : config }, function (error, subscrConfig) {
-                                if (error) {
-                                    return reject(format("subscription %s isn't created: %s", SUBSCR_NAME_1, error.details));
-                                }
-                                if (config.topicName != subscrConfig.topicName ||
-                                    config.ackDeadlineSeconds != subscrConfig.ackDeadlineSeconds ||
-                                    config.pushConfig != config.pushConfig) {
-                                    return reject("wrong subscription config");
-                                }
-                                return resolve("");
-                            }.bindenv(this));
+                            return resolve("");
                         }.bindenv(this));
                     }.bindenv(this));
                 }.bindenv(this));
+            }.bindenv(this))
+            .then(function (value) {
+                return Promise(function (resolve, reject) {
+                    local config = GooglePubSub.SubscriptionConfig(TOPIC_NAME_1, 20, null);
+                    _subscrs.obtain(SUBSCR_NAME_1, { "autoCreate" : true, "subscrConfig" : config }, function (error, subscrConfig) {
+                        if (error) {
+                            return reject(format("subscription %s isn't created: %s", SUBSCR_NAME_1, error.details));
+                        }
+                        if (config.topicName != subscrConfig.topicName ||
+                            config.ackDeadlineSeconds != subscrConfig.ackDeadlineSeconds ||
+                            config.pushConfig != config.pushConfig) {
+                            return reject("wrong subscription config");
+                        }
+                        return resolve("");
+                    }.bindenv(this));
+                }.bindenv(this));
+            }.bindenv(this))
+            .then(function (value) {
+                return _checkEntityStatus(SUBSCR_NAME_1, false, true);
             }.bindenv(this));
     }
 
