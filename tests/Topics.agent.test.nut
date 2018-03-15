@@ -1,6 +1,6 @@
 // MIT License
 //
-// Copyright 2017 Electric Imp
+// Copyright 2017-2018 Electric Imp
 //
 // SPDX-License-Identifier: MIT
 //
@@ -22,87 +22,47 @@
 // ARISING FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR
 // OTHER DEALINGS IN THE SOFTWARE.
 
-@include "https://raw.githubusercontent.com/electricimp/AWSRequestV4/master/AWSRequestV4.class.nut"
-@include "https://raw.githubusercontent.com/electricimp/AWSLambda/master/AWSLambda.agent.lib.nut"
-@include "https://raw.githubusercontent.com/electricimp/OAuth-2.0/master/OAuth2.agent.lib.nut"
-
-const GOOGLE_PROJECT_ID="@{GOOGLE_PROJECT_ID}";
-const AWS_LAMBDA_REGION="@{AWS_LAMBDA_REGION}";
-const AWS_ACCESS_KEY_ID="@{AWS_ACCESS_KEY_ID}";
-const AWS_SECRET_ACCESS_KEY="@{AWS_SECRET_ACCESS_KEY}";
-const GOOGLE_ISS="@{GOOGLE_ISS}";
-const GOOGLE_SECRET_KEY="@{GOOGLE_SECRET_KEY}";
+@include "./tests/CommonTest.nut"
 
 const TOPIC_NAME_1 = "imptest_topics_topic_1";
 const TOPIC_NAME_2 = "imptest_topics_topic_2";
 const TOPIC_NAME_3 = "imptest_topics_topic_3";
 const TOPIC_NAME_4 = "imptest_topics_topic_4";
+const TOPIC_NAME_5 = "imptest_topics_topic_5";
 
 // Test case for GooglePubSub.Topics library
-class TopicsTestCase extends ImpTestCase {
-    _topics = null;
+class TopicsTestCase extends CommonTest {
 
     // Initializes GooglePubSub.Topics library
     function setUp() {
-        local oAuthTokenProvider = OAuth2.JWTProfile.Client(
-            OAuth2.DeviceFlow.GOOGLE,
-            {
-                "iss"         : GOOGLE_ISS,
-                "jwtSignKey"  : GOOGLE_SECRET_KEY,
-                "scope"       : "https://www.googleapis.com/auth/pubsub",
-                "rs256signer" : AWSLambda(AWS_LAMBDA_REGION, AWS_ACCESS_KEY_ID, AWS_SECRET_ACCESS_KEY)
-            });
-        _topics = GooglePubSub.Topics(GOOGLE_PROJECT_ID, oAuthTokenProvider);
+        _setUp();
+        _topics = GooglePubSub.Topics(GOOGLE_PROJECT_ID, _oAuthTokenProvider);
         // clean up topics/subscriptions first
-        return tearDown().then(
-            function(value) {
-                return Promise(function (resolve, reject) {
-                    _topics.obtain(TOPIC_NAME_2, { "autoCreate" : true }, function (error) {
-                        if (error) {
-                            return reject(format("topic %s isn't created: %s", TOPIC_NAME_3, error.details));
-                        }
-                        _topics.obtain(TOPIC_NAME_3, { "autoCreate" : true }, function (error) {
-                            if (error) {
-                                return reject(format("topic %s isn't created: %s", TOPIC_NAME_3, error.details));
-                            }
-                            _topics.obtain(TOPIC_NAME_4, { "autoCreate" : true }, function (error) {
-                                if (error) {
-                                    return reject(format("topic %s isn't created: %s", TOPIC_NAME_4, error.details));
-                                }
-                                imp.wakeup(3.0, function() {
-                                    return resolve("");
-                                }.bindenv(this));
-                            }.bindenv(this));
-                        }.bindenv(this));
-                    }.bindenv(this));
-                }.bindenv(this));
-            }.bindenv(this),
-            function(reason) {
-                return reject(reason);
+        return tearDown()
+            .then(function(value) {
+                return Promise.all([
+                    _createTopic(TOPIC_NAME_2),
+                    _createTopic(TOPIC_NAME_3),
+                    _createTopic(TOPIC_NAME_4)
+                ]);
             }.bindenv(this));
     }
 
     function tearDown() {
-        return Promise(function (resolve, reject) {
-            _topics.remove(TOPIC_NAME_1, function (error) {
-                _topics.remove(TOPIC_NAME_2, function (error) {
-                    _topics.remove(TOPIC_NAME_3, function (error) {
-                        _topics.remove(TOPIC_NAME_4, function (error) {
-                            imp.wakeup(3.0, function() {
-                                return resolve("");
-                            }.bindenv(this));
-                        }.bindenv(this));
-                    }.bindenv(this));
-                }.bindenv(this));
-            }.bindenv(this));
-        }.bindenv(this));
+        return Promise.all([
+                _removeTopic(TOPIC_NAME_1),
+                _removeTopic(TOPIC_NAME_2),
+                _removeTopic(TOPIC_NAME_3),
+                _removeTopic(TOPIC_NAME_4),
+                _removeTopic(TOPIC_NAME_5)
+            ]);
     }
 
     // Tests Topics.obtain
     function testTopicObtain() {
-        return Promise(function (resolve, reject) {
-            _topics.remove(TOPIC_NAME_1, function (error) {
-                imp.wakeup(3.0, function() {
+        return _removeTopic(TOPIC_NAME_1)
+            .then(function (value) {
+                return Promise(function (resolve, reject) {
                     _topics.obtain(TOPIC_NAME_1, null, function (error) {
                         if (!error) {
                             return reject("topic wrongly obtained");
@@ -111,17 +71,14 @@ class TopicsTestCase extends ImpTestCase {
                             if (!error) {
                                 return reject("topic wrongly obtained");
                             }
-                            _topics.obtain(TOPIC_NAME_1, { "autoCreate" : true }, function (error) {
-                                if (error) {
-                                    return reject(format("topic %s isn't created: %s", TOPIC_NAME_1, error.details));
-                                }
-                                return resolve("");
-                            }.bindenv(this));
+                            return resolve("");
                         }.bindenv(this));
                     }.bindenv(this));
                 }.bindenv(this));
+            }.bindenv(this))
+            .then(function (value) {
+                return _createTopic(TOPIC_NAME_1);
             }.bindenv(this));
-        }.bindenv(this));
     }
 
     // Tests Topics.list
@@ -165,28 +122,20 @@ class TopicsTestCase extends ImpTestCase {
 
     // Tests Topics.remove
     function testTopicRemove() {
-        return Promise(function (resolve, reject) {
-            _topics.obtain(TOPIC_NAME_1, { "autoCreate" : true }, function (error) {
-                if (error) {
-                    return reject(format("topic %s isn't created: %s", TOPIC_NAME_1, error.details));
-                }
-                imp.wakeup(3.0, function() {
-                    _topics.remove(TOPIC_NAME_1, function (error) {
-                        if (error) {
-                            return reject("topic remove failed");
+        return _createTopic(TOPIC_NAME_5)
+            .then(function (value) {
+                return _removeTopic(TOPIC_NAME_5, true);
+            }.bindenv(this))
+            .then(function (value) {
+                return Promise(function (resolve, reject) {
+                    _topics.remove(TOPIC_NAME_5, function (error) {
+                        if (!error || error.httpStatus != 404) {
+                            return reject("topic remove error");
                         }
-                        imp.wakeup(3.0, function() {
-                            _topics.remove(TOPIC_NAME_1, function (error) {
-                                if (!error || error.httpStatus != 404) {
-                                    return reject("topic remove error");
-                                }
-                                return resolve("");
-                            }.bindenv(this));
-                        }.bindenv(this));
+                        return resolve("");
                     }.bindenv(this));
                 }.bindenv(this));
-            }.bindenv(this));
-        }.bindenv(this));
+            }.bindenv(this))
     }
 
     // Tests Topics.iam methods

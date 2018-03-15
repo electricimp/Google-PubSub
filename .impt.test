@@ -1,0 +1,12 @@
+{
+  "deviceGroupId": "2e762d42-f81d-d964-150f-2792a9693fe9",
+  "timeout": 180,
+  "stopOnFail": false,
+  "allowDisconnect": false,
+  "builderCache": true,
+  "testFiles": [
+    "*.test.nut",
+    "tests/**/*.test.nut"
+  ],
+  "agentFile": "GooglePubSub.agent.lib.nut"
+}
