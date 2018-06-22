@@ -35,7 +35,7 @@ This example publishes messages to the topic `"test_topic"`.
 
 ## PullSubscriber
 
-This example receives messages from a pull subscription called `"test_pull_subscription"` and prints the messages content. 
+This example receives messages from a pull subscription called `"test_pull_subscription"` and prints the messages content.
 
 ### Notes
 
@@ -84,7 +84,7 @@ This example collects and prints information about topics and subscriptions. The
 
 ## Examples Setup
 
-Copy and paste the code linked below for the example you wish to run.  
+Copy and paste the code linked below for the example you wish to run.
 
 - [Publisher](./Publisher.agent.nut)
 - [PullSubscriber](./PullSubscriber.agent.nut)
@@ -111,11 +111,11 @@ Copy your project’s ID &mdash; it will be used as the *PROJECT_ID* constant.
 
 #### OAuth 2.0 JWT Profile configuration
 
-Follow the instructions from [JWT Profile for OAuth 2.0](https://github.com/electricimp/OAuth-2.0/tree/master/examples#jwt-profile-for-oauth-20) to obtain all the required constants for OAuth 2.0 JWT Profile configuration, which you’ll need to enter into the constants *GOOGLE_ISS*, *GOOGLE_SECRET_KEY*, *AWS_LAMBDA_REGION*, *AWS_ACCESS_KEY_ID* and *AWS_SECRET_ACCESS_KEY*.
+Follow the instructions from [JWT Profile for OAuth 2.0](https://github.com/electricimp/OAuth-2.0/tree/master/examples#jwt-profile-for-oauth-20) to obtain all the required constants for OAuth 2.0 JWT Profile configuration, which you’ll need to enter into the constants *GOOGLE_ISS*, *GOOGLE_SECRET_KEY*.
 
 #### Constants Setup
 
-Set the example code configuration constants (*PROJECT_ID*, *GOOGLE_ISS*, *GOOGLE_SECRET_KEY*, *AWS_LAMBDA_REGION*, *AWS_ACCESS_KEY_ID*, *AWS_SECRET_ACCESS_KEY*) with the values retrieved in the previous steps. You can use the same configuration constants when running examples in parallel.  
+Set the example code configuration constants (*PROJECT_ID*, *GOOGLE_ISS*, *GOOGLE_SECRET_KEY*) with the values retrieved in the previous steps. You can use the same configuration constants when running examples in parallel.
 ![Examples config](http://imgur.com/G0Mw9uv.png)
 
 ### Additional Setup for the PushSubscriber Example

@@ -60,29 +60,18 @@ For information about Google Cloud Pub/Sub service authentication, see [this pag
 // GooglePubSub library
 #require "GooglePubSub.agent.lib.nut:1.0.0"
 
-// AWS Lambda libraries - are used for RSA-SHA256 signature calculation
-#require "AWSRequestV4.class.nut:1.0.2"
-#require "AWSLambda.agent.lib.nut:1.0.0"
-
 // OAuth 2.0 library
 #require "OAuth2.agent.lib.nut:1.0.0"
 
 // Substitute with real values
 const GOOGLE_ISS = "...";
 const GOOGLE_SECRET_KEY = "...";
-const AWS_LAMBDA_REGION = "...";
-const AWS_ACCESS_KEY_ID = "...";
-const AWS_SECRET_ACCESS_KEY = "...";
-
-// External service to sign requests
-local lambda = AWSLambda(AWS_LAMBDA_REGION, AWS_ACCESS_KEY_ID, AWS_SECRET_ACCESS_KEY);
 
 // configuration for OAuth2
 local config = {
     "iss"         : GOOGLE_ISS,
     "jwtSignKey"  : GOOGLE_SECRET_KEY,
-    "scope"       : "https://www.googleapis.com/auth/pubsub",
-    "rs256signer" : lambda
+    "scope"       : "https://www.googleapis.com/auth/pubsub"
 };
 
 // Obtain the Access Tokens Provider

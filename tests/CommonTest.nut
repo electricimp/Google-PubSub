@@ -22,14 +22,9 @@
 // ARISING FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR
 // OTHER DEALINGS IN THE SOFTWARE.
 
-@include "https://raw.githubusercontent.com/electricimp/AWSRequestV4/master/AWSRequestV4.class.nut"
-@include "https://raw.githubusercontent.com/electricimp/AWSLambda/master/AWSLambda.agent.lib.nut"
 @include "https://raw.githubusercontent.com/electricimp/OAuth-2.0/master/OAuth2.agent.lib.nut"
 
 const GOOGLE_PROJECT_ID = "@{GOOGLE_PROJECT_ID}";
-const AWS_LAMBDA_REGION = "@{AWS_LAMBDA_REGION}";
-const AWS_ACCESS_KEY_ID = "@{AWS_ACCESS_KEY_ID}";
-const AWS_SECRET_ACCESS_KEY = "@{AWS_SECRET_ACCESS_KEY}";
 const GOOGLE_ISS = "@{GOOGLE_ISS}";
 const GOOGLE_SECRET_KEY = "@{GOOGLE_SECRET_KEY}";
 
@@ -46,8 +41,7 @@ class CommonTest extends ImpTestCase {
             {
                 "iss"         : GOOGLE_ISS,
                 "jwtSignKey"  : GOOGLE_SECRET_KEY,
-                "scope"       : "https://www.googleapis.com/auth/pubsub",
-                "rs256signer" : AWSLambda(AWS_LAMBDA_REGION, AWS_ACCESS_KEY_ID, AWS_SECRET_ACCESS_KEY)
+                "scope"       : "https://www.googleapis.com/auth/pubsub"
             });
     }
 

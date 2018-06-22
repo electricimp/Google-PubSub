@@ -22,13 +22,9 @@
 // ARISING FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR
 // OTHER DEALINGS IN THE SOFTWARE.
 
-// AWS Lambda libraries - are used for RSA-SHA256 signature calculation for OAuth2
-#require "AWSRequestV4.class.nut:1.0.2"
-#require "AWSLambda.agent.lib.nut:1.0.0"
- 
 // OAuth 2.0 library required for GooglePubSub
 #require "OAuth2.agent.lib.nut:1.0.0"
- 
+
 #require "GooglePubSub.agent.lib.nut:1.0.0"
 
 // GooglePubSub.PullSubscriber and GooglePubSub.Subscriptions demo.
@@ -101,9 +97,6 @@ class PullSubscriber {
 const PROJECT_ID = "...";
 const GOOGLE_ISS = "...";
 const GOOGLE_SECRET_KEY = "...";
-const AWS_LAMBDA_REGION = "...";
-const AWS_ACCESS_KEY_ID = "...";
-const AWS_SECRET_ACCESS_KEY = "...";
 
 // obtaining OAuth2 Access Tokens Provider
 local oAuthTokenProvider = OAuth2.JWTProfile.Client(
@@ -111,8 +104,7 @@ local oAuthTokenProvider = OAuth2.JWTProfile.Client(
     {
         "iss"         : GOOGLE_ISS,
         "jwtSignKey"  : GOOGLE_SECRET_KEY,
-        "scope"       : "https://www.googleapis.com/auth/pubsub",
-        "rs256signer" : AWSLambda(AWS_LAMBDA_REGION, AWS_ACCESS_KEY_ID, AWS_SECRET_ACCESS_KEY)
+        "scope"       : "https://www.googleapis.com/auth/pubsub"
     });
 
 const TOPIC_NAME = "test_topic";

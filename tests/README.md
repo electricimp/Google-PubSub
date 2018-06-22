@@ -27,7 +27,7 @@ Copy your project’s ID &mdash; it will be used as the *GOOGLE_PROJECT_ID* envi
 
 ## OAuth 2.0 JWT Profile configuration
 
-Follow the instructions from [JWT Profile for OAuth 2.0](https://github.com/electricimp/OAuth-2.0/tree/master/examples#jwt-profile-for-oauth-20) to obtain all the required constants for OAuth 2.0 JWT Profile configuration, which will be used as the *GOOGLE_ISS*, *GOOGLE_SECRET_KEY*, *AWS_LAMBDA_REGION*, *AWS_ACCESS_KEY_ID* and *AWS_SECRET_ACCESS_KEY* environment variable.
+Follow the instructions from [JWT Profile for OAuth 2.0](https://github.com/electricimp/OAuth-2.0/tree/master/examples#jwt-profile-for-oauth-20) to obtain all the required constants for OAuth 2.0 JWT Profile configuration, which will be used as the *GOOGLE_ISS*, *GOOGLE_SECRET_KEY* environment variable.
 
 ## Register the Push Endpoint
 - Assign a device that will be used for tests execution to a Device Group.
@@ -59,7 +59,7 @@ You should receive a success message like “Congratulations, you have successfu
 ## Set Environment Variables
 
 - Set the mandatory environment variables (*GOOGLE_PROJECT_ID*, *GOOGLE_ISS*, *GOOGLE_SECRET_KEY*, *AWS_LAMBDA_REGION*, *AWS_ACCESS_KEY_ID*, *AWS_SECRET_ACCESS_KEY*) to the values you retrieved and saved in the previous steps.
-- If needed, set optional environment variables 
+- If needed, set optional environment variables
     - *GITHUB_USER* / *GITHUB_TOKEN* - a GitHub account username / password or personal access token. You need to specify them when you got `GitHub rate limit reached` error.
 - For integration with [Travis](https://travis-ci.org) set *EI_LOGIN_KEY* environment variable to the valid impCentral login key.
 
