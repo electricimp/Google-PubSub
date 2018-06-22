@@ -25,7 +25,7 @@
 // OAuth 2.0 library required for GooglePubSub
 #require "OAuth2.agent.lib.nut:1.0.0"
 
-#require "GooglePubSub.agent.lib.nut:1.0.0"
+#require "GooglePubSub.agent.lib.nut:1.1.0"
 
 // GooglePubSub.PullSubscriber and GooglePubSub.Subscriptions demo.
 // Creates a pull subscription to the specified topic if it does not exist

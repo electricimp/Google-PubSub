@@ -25,7 +25,7 @@
 // OAuth 2.0 library required for GooglePubSub
 #require "OAuth2.agent.lib.nut:1.0.0"
 
-#require "GooglePubSub.agent.lib.nut:1.0.0"
+#require "GooglePubSub.agent.lib.nut:1.1.0"
 
 // GooglePubSub.Publisher and GooglePubSub.Topics demo.
 // Creates a topic if it does not exist (topic name is specified as constructor argument)
