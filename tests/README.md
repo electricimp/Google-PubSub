@@ -58,7 +58,7 @@ You should receive a success message like “Congratulations, you have successfu
 
 ## Set Environment Variables
 
-- Set the mandatory environment variables (*GOOGLE_PROJECT_ID*, *GOOGLE_ISS*, *GOOGLE_SECRET_KEY*, *AWS_LAMBDA_REGION*, *AWS_ACCESS_KEY_ID*, *AWS_SECRET_ACCESS_KEY*) to the values you retrieved and saved in the previous steps.
+- Set the mandatory environment variables (*GOOGLE_PROJECT_ID*, *GOOGLE_ISS*, *GOOGLE_SECRET_KEY*) to the values you retrieved and saved in the previous steps.
 - If needed, set optional environment variables
     - *GITHUB_USER* / *GITHUB_TOKEN* - a GitHub account username / password or personal access token. You need to specify them when you got `GitHub rate limit reached` error.
 - For integration with [Travis](https://travis-ci.org) set *EI_LOGIN_KEY* environment variable to the valid impCentral login key.
