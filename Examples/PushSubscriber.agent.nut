@@ -23,7 +23,7 @@
 // OTHER DEALINGS IN THE SOFTWARE.
 
 // OAuth 2.0 library required for GooglePubSub
-#require "OAuth2.agent.lib.nut:1.0.0"
+#require "OAuth2.agent.lib.nut:2.0.0"
 
 #require "GooglePubSub.agent.lib.nut:1.0.0"
 

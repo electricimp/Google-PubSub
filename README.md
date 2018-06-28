@@ -61,7 +61,7 @@ For information about Google Cloud Pub/Sub service authentication, see [this pag
 #require "GooglePubSub.agent.lib.nut:1.1.0"
 
 // OAuth 2.0 library
-#require "OAuth2.agent.lib.nut:1.0.0"
+#require "OAuth2.agent.lib.nut:2.0.0"
 
 // Substitute with real values
 const GOOGLE_ISS = "...";
