@@ -4,7 +4,7 @@
 
 This library lets your agent code connect to [Google’s Cloud Pub/Sub service](https://cloud.google.com/pubsub). It makes use of the [Google Cloud Pub/Sub REST API](https://cloud.google.com/pubsub/docs/reference/rest).
 
-**To add this library to your project, add** `#require "GooglePubSub.agent.lib.nut:1.0.0"` **to the top of your agent code.**
+**To add this library to your project, add** `#require "GooglePubSub.agent.lib.nut:1.1.0"` **to the top of your agent code.**
 
 ## The Google Cloud Pub/Sub Service
 
@@ -58,31 +58,20 @@ For information about Google Cloud Pub/Sub service authentication, see [this pag
 
 ```squirrel
 // GooglePubSub library
-#require "GooglePubSub.agent.lib.nut:1.0.0"
-
-// AWS Lambda libraries - are used for RSA-SHA256 signature calculation
-#require "AWSRequestV4.class.nut:1.0.2"
-#require "AWSLambda.agent.lib.nut:1.0.0"
+#require "GooglePubSub.agent.lib.nut:1.1.0"
 
 // OAuth 2.0 library
-#require "OAuth2.agent.lib.nut:1.0.0"
+#require "OAuth2.agent.lib.nut:2.0.0"
 
 // Substitute with real values
 const GOOGLE_ISS = "...";
 const GOOGLE_SECRET_KEY = "...";
-const AWS_LAMBDA_REGION = "...";
-const AWS_ACCESS_KEY_ID = "...";
-const AWS_SECRET_ACCESS_KEY = "...";
-
-// External service to sign requests
-local lambda = AWSLambda(AWS_LAMBDA_REGION, AWS_ACCESS_KEY_ID, AWS_SECRET_ACCESS_KEY);
 
 // configuration for OAuth2
 local config = {
     "iss"         : GOOGLE_ISS,
     "jwtSignKey"  : GOOGLE_SECRET_KEY,
-    "scope"       : "https://www.googleapis.com/auth/pubsub",
-    "rs256signer" : lambda
+    "scope"       : "https://www.googleapis.com/auth/pubsub"
 };
 
 // Obtain the Access Tokens Provider

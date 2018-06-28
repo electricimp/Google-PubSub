@@ -61,8 +61,7 @@ class SubscrsNegativeTestCase extends CommonTest {
                 {
                     "iss"         : GOOGLE_ISS,
                     "jwtSignKey"  : GOOGLE_SECRET_KEY,
-                    "scope"       : "https://www.googleapis.com/auth/pubsub",
-                    "rs256signer" : AWSLambda(AWS_LAMBDA_REGION, AWS_ACCESS_KEY_ID, AWS_SECRET_ACCESS_KEY)
+                    "scope"       : "https://www.googleapis.com/auth/pubsub"
                 });
             local subscrs = GooglePubSub.Subscriptions(null, oAuthTokenProvider);
             subscrs.remove(SUBSCR_NAME_1, function (error) {
