@@ -116,7 +116,7 @@ Follow the instructions from [JWT Profile for OAuth 2.0](https://github.com/elec
 #### Constants Setup
 
 Set the example code configuration constants (*PROJECT_ID*, *GOOGLE_ISS*, *GOOGLE_SECRET_KEY*) with the values retrieved in the previous steps. You can use the same configuration constants when running examples in parallel.
-![Examples config](http://imgur.com/G0Mw9uv.png)
+![Examples config](../png/4.png)
 
 ### Additional Setup for the PushSubscriber Example
 
