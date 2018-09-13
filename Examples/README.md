@@ -140,7 +140,7 @@ http.onrequest(function (request, response) {
 ![Imp verification code](../png/8.png)
 This verification is needed only once per agent, and you should replace the above code with the example application code. Make sure the above code is not included in your example source code, otherwise messages will not be received.
 - In the [Google Search Console](https://www.google.com/webmasters/tools) click ‘VERIFY’.
-![Search console download](../png/7_2.png)
+![Search console verify](../png/7_2.png)
 You should see “Ownership verified” success message.
 - Go to the [Google Cloud Console](https://console.cloud.google.com).
 - Select your project.
