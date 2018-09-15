@@ -14,47 +14,48 @@ The tests for GooglePubSub library require pre-setup described below.
 ## Google Cloud Account Configuration
 
 - Login at [Google Cloud Console](https://console.cloud.google.com) in your web browser.
-- If you have an existing project that you want to work with, skip this step, otherwise click the ‘Select a project’ link and click ‘+’ in the opened window:
-![Project create](http://imgur.com/2FbH9S6.png)
+- If you have an existing project that you want to work with, skip this step, otherwise click the ‘Select a project’ link and click ‘NEW PROJECT’ in the opened window:
+![Project create](../png/1.png)
 Enter a project name and click ‘Create’.
 - Click the ‘Select a project’ link and choose your project.
 Copy your project’s ID &mdash; it will be used as the *GOOGLE_PROJECT_ID* environment variable.
-![Project select](http://imgur.com/PR9U25p.png)
+![Project select](../png/2.png)
+Click ‘OPEN’.
 - In the hamburger menu choose ‘Pub/Sub’:
-![PubSub menu](http://imgur.com/81zNGg1.png)
+![PubSub menu](../png/3.png)
 - Click ‘Enable API’:
-![PubSub enable](http://imgur.com/MS7MnZK.png)
+![PubSub enable](../png/4.png)
 
 ## OAuth 2.0 JWT Profile configuration
 
-Follow the instructions from [JWT Profile for OAuth 2.0](https://github.com/electricimp/OAuth-2.0/tree/master/examples#jwt-profile-for-oauth-20) to obtain all the required constants for OAuth 2.0 JWT Profile configuration, which will be used as the *GOOGLE_ISS*, *GOOGLE_SECRET_KEY* environment variable.
+Follow the instructions from [JWT Profile for OAuth 2.0](https://github.com/electricimp/OAuth-2.0/tree/master/examples#jwt-profile-for-oauth-20) to obtain all the required constants for OAuth 2.0 JWT Profile configuration, which will be used as the *GOOGLE_ISS*, *GOOGLE_SECRET_KEY* environment variables.
 
 ## Register the Push Endpoint
 - Assign a device that will be used for tests execution to a Device Group.
 - Copy your device’s agent URL from the Electric Imp IDE.
-- Go to the [Google Search Console](https://www.google.com/webmasters/tools), enter your agent URL and click ‘Add a property’:
-![Search console add property](http://imgur.com/ZFpLQHY.png)
-- Download the suggested HTML verification file:
-![Search console download](http://imgur.com/AEe7O69.png)
-- Add the following code to your agent. Make sure you enter the *GOOGLE_SITE_VERIFICATION* value with the downloaded HTML verification file’s contents, and then click ‘Build and Run’.
+- Go to the [Google Search Console](https://www.google.com/webmasters/tools), enter your agent URL and click ‘ADD PROPERTY’:
+![Search console add property](../png/6.png)
+- Download the suggested HTML file:
+![Search console download](../png/7.png)
+- Add the following code to your agent. Make sure you enter the *GOOGLE_SITE_VERIFICATION* value with the downloaded HTML file’s contents, and then click ‘Build and Force Restart’.
 ```squirrel
 const GOOGLE_SITE_VERIFICATION = "...";
 http.onrequest(function (request, response) {
     response.send(200, GOOGLE_SITE_VERIFICATION);
 });
 ```
-![Imp verification code](http://imgur.com/HzSt05P.png)
-- In the [Google Search Console](https://www.google.com/webmasters/tools), click on the link ‘Confirm successful upload by visiting ... in your browser’ and then click ‘Verify’:
-![Search console steps](http://imgur.com/l8z6WvP.png)
-You should receive a success message like “Congratulations, you have successfully verified your ownership of ...”
+![Imp verification code](../png/8.png)
+- In the [Google Search Console](https://www.google.com/webmasters/tools) click ‘VERIFY’.
+![Search console verify](../png/7_2.png)
+You should see “Ownership verified” success message.
 - Go to the [Google Cloud Console](https://console.cloud.google.com).
 - Select your project.
 - In the hamburger menu choose ‘APIs & Services’, then select ‘Credentials’:
-![Credentials](http://imgur.com/ewnRN6i.png)
+![Credentials](../png/9.png)
 - Select ‘Domain verification’ and click ‘Add domain’:
-![Domain verification](http://imgur.com/XfQwV1f.png)
-- Enter your agent URL and click ‘Add domain’:
-![Add domain](http://imgur.com/SmNDmsf.png)
+![Domain verification](../png/10.png)
+- Enter your agent URL and click ‘ADD DOMAIN’:
+![Add domain](../png/11.png)
 
 ## Set Environment Variables
 
