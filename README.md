@@ -29,6 +29,10 @@ A Google Cloud Project is the component of the Google Cloud Platform which allow
 
 You can view example that will show you how to create and configure a Google Cloud Project [here](./Examples/README.md#google-cloud-account-configuration). For more information, please see [Google Cloud Project resource description](https://cloud.google.com/resource-manager/docs/cloud-platform-resource-hierarchy#projects) and [Creating and Managing Projects](https://cloud.google.com/resource-manager/docs/creating-managing-projects).
 
+## Further Examples
+
+Working examples are provided in the [Examples](./Examples) directory and described [here](./Examples/README.md).
+
 ## Library Usage
 
 The library API is described in detail in a [separate document](./GooglePubSubAPI.md).
@@ -475,10 +479,6 @@ subscrs.iam().testPermissions(
         }
     });
 ```
-
-## Further Examples
-
-Working examples are provided in the [Examples](./Examples) directory and described [here](./Examples/README.md).
 
 ## License
 
