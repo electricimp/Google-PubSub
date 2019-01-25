@@ -6,6 +6,10 @@ This library lets your agent code connect to [Google’s Cloud Pub/Sub service](
 
 **To add this library to your project, add** `#require "GooglePubSub.agent.lib.nut:1.1.0"` **to the top of your agent code.**
 
+## Examples
+
+Working examples with step-by-step instructions are provided in the [Examples](./Examples) directory and described [here](./Examples/README.md).
+
 ## The Google Cloud Pub/Sub Service
 
 [Google Cloud Pub/Sub](https://cloud.google.com/pubsub/docs/overview) is a publish/subscribe service &mdash; a messaging service where the senders of messages are decoupled from the receivers of those messages. There are five main entities used by the Pub/Sub service:
@@ -28,10 +32,6 @@ Before working with Google Cloud Pub/Sub Service you need to:
 A Google Cloud Project is the component of the Google Cloud Platform which allows users to create, configure and use all Cloud Platform resources and services, including Pub/Sub. All Pub/Sub topics and subscriptions are owned by a specific project; the library’s classes needs to instanced for each project you work with.
 
 You can view example that will show you how to create and configure a Google Cloud Project [here](./Examples/README.md#google-cloud-account-configuration). For more information, please see [Google Cloud Project resource description](https://cloud.google.com/resource-manager/docs/cloud-platform-resource-hierarchy#projects) and [Creating and Managing Projects](https://cloud.google.com/resource-manager/docs/creating-managing-projects).
-
-## Further Examples
-
-Working examples are provided in the [Examples](./Examples) directory and described [here](./Examples/README.md).
 
 ## Library Usage
 
