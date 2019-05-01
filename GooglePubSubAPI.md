@@ -439,3 +439,7 @@ The method returns nothing. The result of the operation may be obtained via the 
 | --- | --- | --- |
 | *error* | GooglePubSub.Error | Error details, or `null` if the operation succeeds |
 | *permissions* | Array of strings | A subset of the permissions set for the resource |
+
+## License
+
+The GooglePubSub library is licensed under the [MIT License](./LICENSE)
