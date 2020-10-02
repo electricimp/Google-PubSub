@@ -1834,8 +1834,8 @@ class GooglePubSub._Resource {
         _oAuthTokenProvider.acquireAccessToken(function (token, error) {
             if (error) {
                 _invokeCallback(GooglePubSub.Error(PUB_SUB_ERROR.LIBRARY_ERROR,
-                    format("%s: %s", GOOGLE_PUB_SUB_TOKEN_ACQUISITION_ERROR, error),
-                    null, callback));
+                    format("%s: %s", GOOGLE_PUB_SUB_TOKEN_ACQUISITION_ERROR, error)),
+                    null, callback);
             }
             else {
                 local headers = {
