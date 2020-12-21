@@ -1,6 +1,6 @@
 // MIT License
 //
-// Copyright 2017 Electric Imp
+// Copyright 2017-2020 Electric Imp
 //
 // SPDX-License-Identifier: MIT
 //
@@ -144,7 +144,7 @@ const GOOGLE_PUB_SUB_OPTION_REQUIRED = "option must be specified";
 const GOOGLE_PUB_SUB_INVALID_FORMAT = "Invalid format of";
 
 class GooglePubSub {
-    static VERSION = "1.1.0";
+    static VERSION = "1.1.1";
 
     // Enables/disables the library debug output (including errors logging).
     // Disabled by default.
