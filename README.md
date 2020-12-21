@@ -2,7 +2,7 @@
 
 This library lets your agent code connect to [Google’s Cloud Pub/Sub service](https://cloud.google.com/pubsub). It makes use of the [Google Cloud Pub/Sub REST API](https://cloud.google.com/pubsub/docs/reference/rest).
 
-**To add this library to your project, add** `#require "GooglePubSub.agent.lib.nut:1.1.0"` **to the top of your agent code.**
+**To add this library to your project, add** `#require "GooglePubSub.agent.lib.nut:1.1.1"` **to the top of your agent code.**
 
 ![Build Status](https://cse-ci.electricimp.com/app/rest/builds/buildType:(id:GooglePubSub_BuildAndTest)/statusIcon)
 
@@ -62,7 +62,7 @@ For information about Google Cloud Pub/Sub service authentication, see [this pag
 
 ```squirrel
 // GooglePubSub library
-#require "GooglePubSub.agent.lib.nut:1.1.0"
+#require "GooglePubSub.agent.lib.nut:1.1.1"
 
 // OAuth 2.0 library
 #require "OAuth2.agent.lib.nut:2.0.0"
